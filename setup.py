@@ -27,7 +27,7 @@ classifiers = [
 
 setup(
     name="pyvoyis",
-    version="0.1",
+    version="1.0.0",
     description="Voyis Recon LS python driver",
     author="Miquel Massot",
     author_email="miquel.massot@gmail.com",
