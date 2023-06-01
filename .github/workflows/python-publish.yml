@@ -1,39 +1,90 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Upload Python Package
-
+name: Wheels
 on:
-  release:
-    types: [published]
-
-permissions:
-  contents: read
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'     
+        required: true
+        default: 'warning'
 
 jobs:
-  deploy:
-
+  build_wheels:
+    name: Wheels on ${{ matrix.os_dist.os }} for ${{ matrix.os_dist.dist}}
+    runs-on: ${{ matrix.os_dist.os }}
+    strategy:
+      matrix:
+        os_dist: [
+          {os: ubuntu-latest, dist: cp36-manylinux_x86_64},
+          {os: ubuntu-latest, dist: cp37-manylinux_x86_64},
+          {os: ubuntu-latest, dist: cp38-manylinux_x86_64},
+          {os: ubuntu-latest, dist: cp39-manylinux_x86_64},
+          {os: ubuntu-latest, dist: cp310-manylinux_x86_64},
+          {os: ubuntu-latest, dist: cp311-manylinux_x86_64},
+          {os: macos-latest, dist: cp36-macosx_x86_64, macosarch: x86_64},
+          {os: macos-latest, dist: cp37-macosx_x86_64, macosarch: x86_64},
+          {os: macos-latest, dist: cp38-macosx_x86_64, macosarch: x86_64},
+          {os: macos-latest, dist: cp39-macosx_x86_64, macosarch: x86_64},
+          {os: macos-latest, dist: cp310-macosx_x86_64, macosarch: x86_64},
+          {os: macos-latest, dist: cp311-macosx_x86_64, macosarch: x86_64},
+          {os: macos-latest, dist: cp38-macosx_arm64, macosarch: arm64},
+          {os: macos-latest, dist: cp39-macosx_arm64, macosarch: arm64},
+          {os: macos-latest, dist: cp310-macosx_arm64, macosarch: arm64},
+          {os: macos-latest, dist: cp311-macosx_arm64, macosarch: arm64},
+          {os: windows-latest, dist: cp36-win_amd64},
+          {os: windows-latest, dist: cp37-win_amd64},
+          {os: windows-latest, dist: cp38-win_amd64},
+          {os: windows-latest, dist: cp39-win_amd64},
+          {os: windows-latest, dist: cp310-win_amd64},
+          {os: windows-latest, dist: cp311-win_amd64},
+          {os: windows-latest, dist: cp36-win32},
+          {os: windows-latest, dist: cp37-win32},
+        ]
+    env:
+      CIBW_BUILD: "${{ matrix.os_dist.dist }}"
+      CIBW_ARCHS_MACOS: "${{ matrix.os_dist.macosarch }}"
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v4
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.12.1
+        env:
+          CIBW_BUILD_VERBOSITY: 1
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+          config-file: "{package}/pyproject.toml"
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
+  
+  make_sdist:
+    name: Make SDist
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v3
       with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build
-    - name: Build package
-      run: python -m build
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+        submodules: recursive
+    - name: Build SDist
+      run: pipx run build --sdist
+    - uses: actions/upload-artifact@v3
       with:
+        path: dist/*.tar.gz
+
+  upload_all:
+    needs: [build_wheels, make_sdist]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: artifact
+        path: dist
+    - uses: pypa/gh-action-pypi-publish@v1.8.1
+      with:
+        skip_existing: true
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
