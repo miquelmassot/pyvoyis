@@ -1,0 +1,47 @@
+ip_address: 192.168.10.26
+port: 4075
+log_path: logs
+
+api_param_stills:
+  undistort: true
+  save_original: true
+  # tiff (uncompressed) or jpg (compressed)
+  processed_image_format: jpg
+
+scanner_param:
+  # Stills camera
+  stills_freq_hz: 0.5
+  stills_exp_us: 5000
+
+  # Image levelling
+  # * 0 - Disable leveling
+  # * 1 - Enable Algorithmic leveling
+  # * 2 - Enable Realistic leveling
+  # * 3 – Enable Advanced leveling (needs correction model)
+  stills_image_level: 2
+
+  # Laser camera
+  laser_freq_hz: 20.0
+  laser_exp_us: 1000
+  save_laser_images: true
+  laser_gain_percentage: 100
+
+  # Range gating
+  laser_disable_range_gating: false
+  laser_min_range_cm: 100
+  laser_max_range_cm: 1000
+
+  # LED panel
+  led_panel_intensity_percentage: 100
+
+  # Refraction
+  index_of_refraction: 1.35
+
+
+endpoint_id:
+  log: /data/data/smarty200/log
+  stream: /data/data/smarty200/internal/raw
+  xyz_laser: /data/data/smarty200/pointcloud/xyz
+  sensor_laser: /data/data/smarty200/laser/laser
+  sensor_stills_raw: /data/data/smarty200/stills_raw/stills_raw
+  sensor_stills_processed: /data/data/smarty200/stills_processed/stills_processed

@@ -10,7 +10,7 @@ See LICENSE.md file in the project root for full license information.
 import argparse
 import logging
 
-from pyvoyis import VoyisAPI
+from pyvoyis import Configuration, VoyisAPI
 from pyvoyis.tools.custom_logger import setup_logging
 
 
@@ -18,22 +18,31 @@ def main():
     parser = argparse.ArgumentParser(
         description="Run a TCP client to send messages to Voyis API"
     )
+    parser.add_argument("--ip", type=str, help="IP address of the Voyis API")
+    parser.add_argument("--port", type=int, help="Port of the Voyis API")
+    parser.add_argument("--log_path", type=str, help="Path to save the log file")
     parser.add_argument(
-        "--ip", type=str, default="192.168.10.26", help="IP address of the Voyis API"
-    )
-    parser.add_argument("--port", type=int, default=4875, help="Port of the Voyis API")
-    parser.add_argument(
-        "--log_path", type=str, default="logs", help="Path to save the log file"
+        "-c, --config", dest="config", type=str, help="Path to the configuration file"
     )
     args = parser.parse_args()
 
-    setup_logging(args.log_path)
+    config = Configuration(args.config)
+
+    if args.log_path:
+        config.log_path = args.log_path
+
+    setup_logging(config.log_path)
     log = logging.getLogger("VoyisROS")
-    # log.setLevel(logging.INFO)
+    log.info("Starting Voyis API client")
 
-    log.info("Starting Voyis client")
+    if args.ip:
+        log.info("Using provided IP address: %s", args.ip)
+        config.ip_address = args.ip
+    if args.port:
+        log.info("Using provided port: %s", args.port)
+        config.port = args.port
 
-    api = VoyisAPI(args.ip, args.port)
+    api = VoyisAPI(config)
     api.request_acquisition()
     api.run()
 

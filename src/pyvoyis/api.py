@@ -87,6 +87,7 @@ from pyvoyis.messages import (
     ScannerStatusNot,
 )
 from pyvoyis.state_machine import VoyisAPIStateMachine
+from pyvoyis.tools.bool2str import bool2str
 from pyvoyis.tools.rate import Rate
 from pyvoyis.tools.safe_get import safe_get
 
@@ -94,15 +95,16 @@ nest_asyncio.apply()
 
 
 class VoyisAPI:
-    def __init__(self, ip, port):
+    def __init__(self, config):
         """Class to handle the Voyis API"""
-        self.ip = ip
-        self.port = port
+        self.config = config
+        self.ip = config.ip_address
+        self.port = config.port
         self.log = logging.getLogger("VoyisAPI")
         self.event = threading.Event()
         self.task_set = set()
         self.loop = asyncio.get_event_loop()
-        self.client = API500Client(ip, port, self.loop, self.task_set)
+        self.client = API500Client(self.ip, self.port, self.loop, self.task_set)
         self.state = VoyisAPIStateMachine()
         self.cmd = VoyisCommander()
 
@@ -398,7 +400,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": "/data/data/smarty200/log",
+                "file_name": self.config.endpoind_id.log,
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -406,7 +408,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": "/data/data/smarty200/internal/raw",
+                "file_name": self.config.endpoind_id.stream,
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -414,7 +416,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": "/data/data/smarty200/pointcloud/xyz",
+                "file_name": self.config.endpoind_id.xyz_laser,
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -422,7 +424,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": "/data/data/smarty200/laser/laser",
+                "file_name": self.config.endpoind_id.sensor_laser,
                 "file_max_bytes": 0,
             },
             {
@@ -430,7 +432,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": "/data/data/smarty200/stills_raw/stills_raw",
+                "file_name": self.config.endpoind_id.sensor_stills_raw,
                 "file_max_bytes": 0,
             },
             {
@@ -438,7 +440,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": "/data/data/smarty200/stills_processed/stills_processed",
+                "file_name": self.config.endpoind_id.sensor_stills_processed,
                 "file_max_bytes": 0,
             },
         ]
@@ -658,25 +660,26 @@ class VoyisAPI:
             True if the command was successful, False otherwise
         """
         self.log.info("[VoyisAPI]: Setting scan parameters...")
+        cfg = self.config.scanner_param.s
         self.cmd.set_local_scanner_parameters.payload = [
             {
                 "parameter_id": SCANNER_PARAM_PROFILE_STILLS_EXP,
-                "value": "2000",
+                "value": str(cfg.scanner_param.stills_exp_us),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_LASER_FREQ,
-                "value": "20000",
+                "value": str(int(cfg.scanner_param.laser_freq_hz * 1000)),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_STILL_FREQ,
-                "value": "500",
+                "value": str(int(cfg.scanner_param.stills_freq_hz * 1000)),
                 "type": VALUE_TYPE_UINT,
             },
-            {
+            {  # If true, laser freq is 1 Hz
                 "parameter_id": SCANNER_PARAM_OUTPUT_LASER_DATA,
-                "value": "true",  # If true, laser freq is 1 Hz
+                "value": bool2str(cfg.save_laser_images),
                 "type": VALUE_TYPE_BOOL,
             },
             {
@@ -686,32 +689,32 @@ class VoyisAPI:
             },
             {
                 "parameter_id": SCANNER_PARAM_LASER_MIN_RANGE,
-                "value": "100",
+                "value": str(cfg.laser_min_range_cm),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_LASER_MAX_RANGE,
-                "value": "1000",
+                "value": str(cfg.laser_max_range_cm),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_INDEX_OF_REFRACTION,
-                "value": "1350000",
+                "value": str(int(cfg.index_of_refraction * 1e6)),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_LED_PANEL_INTENSITY,
-                "value": "100",
+                "value": str(cfg.led_panel_intensity_percentage),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_LASER_OUTPUT_GAIN,
-                "value": "100",
+                "value": str(cfg.laser_gain_percentage),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_STILLS_IMAGE_LEVEL,
-                "value": "2",
+                "value": str(cfg.stills_image_level),
                 "type": VALUE_TYPE_UINT,
             },
         ]
@@ -727,17 +730,17 @@ class VoyisAPI:
         self.cmd.set_api_configuration.payload = [
             {
                 "parameter_id": API_PARAM_STILLS_IMAGE_UNDISTORT,
-                "value": "1",
+                "value": bool2str(cfg.undistort_images, "1", "0"),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": API_PARAM_STILLS_IMAGE_SAVE_ORIGINAL,
-                "value": "1",
+                "value": bool2str(cfg.save_original, "1", "0"),
                 "type": VALUE_TYPE_BOOL,
             },
             {
                 "parameter_id": API_PARAM_STILLS_PROCESSED_IMAGE_FORMAT,
-                "value": "1",
+                "value": bool2str(cfg.processed_image_format, "1", "0"),
                 "type": VALUE_TYPE_UINT,
             },
         ]

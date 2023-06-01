@@ -41,6 +41,7 @@ setup(
     install_requires=[
         "nest_asyncio",
         "python-statemachine",
+        "pydantic",
     ],
     project_urls={"Bug Reports": GITHUB_URL + "/issues", "Source": GITHUB_URL},
     entry_points={"console_scripts": ["pyvoyis = pyvoyis.cli:main"]},
