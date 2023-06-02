@@ -127,3 +127,5 @@ Can the laser images be saved as JPEG to save time?
 ### Laser calibration
 Can we take images of the laser with both cameras? (e.g. leave the laser ON continuously and disable the strobes?)
 
+## Laser in sunlight
+Can we expect the laser to work in shoreline deployments? Should we default to collect raw laser images at 1 Hz?
