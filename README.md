@@ -121,5 +121,9 @@ Only SCANNER_STATUS_INTERNAL_TEMP_CH works. Other report either 0 or 255.
 ### What are the max frequencies for cameras?
 If the raw laser images are saved to disk, its frequency is currently limited to 1 Hz.
 
-Can the frequency of laser images be larger than 1hz if there's enough time for stills? Where's the compromise?
+Can the frequency of laser images be larger than 1hz if there's enough time for stills? 
+Can the laser images be saved as JPEG to save time?
+
+### Laser calibration
+Can we take images of the laser with both cameras? (e.g. leave the laser ON continuously and disable the strobes?)
 
