@@ -36,6 +36,7 @@ class VoyisAPIStateMachine(StateMachine):
         | requesting_stop.to(idling)
         | stopping.to(idling)
         | disconnecting.to(idling)
+        | idling.to(idling)
     )
 
     def before_cycle(self, event: str, source: State, target: State, message: str = ""):

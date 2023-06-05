@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 import sys
+import copy
 
 if sys.version_info[:2] >= (3, 7):
     pass
@@ -28,6 +29,7 @@ class API500ClientProtocol(asyncio.Protocol):
         self.received = []
         self.lock = asyncio.Lock()
         self.connected = False
+        self.data = ""
 
     async def _process_queue_loop(self):
         """Send messages to the server as they become available."""
@@ -82,11 +84,21 @@ class API500ClientProtocol(asyncio.Protocol):
             channel:        the name of the channel
             channel_count:  the amount of channels subscribed to
         """
-        data = data.decode("utf-8")
-        # self.log.debug('Received: \n{}'.format(data))
-
+        chunk = data.decode("utf-8")
+        whole_data = ""
+        # self.log.debug('Received raw chunk: {}'.format(data))
+        if chunk.endswith("\n}"):
+            self.data += chunk
+            whole_data = copy.deepcopy(self.data)
+            self.data = ""
+            self.log.debug("Whole chunk ready")
+        else:
+            self.log.debug("Adding chunk to message")
+            self.data += chunk
+            return
+        
         # Split data into JSON strings if "}{" is found
-        objects = data.split("}{")
+        objects = whole_data.split("}{")
 
         # Add back the missing brackets
         if len(objects) > 1:
@@ -97,10 +109,12 @@ class API500ClientProtocol(asyncio.Protocol):
 
         # Process each object
         for idx, obj in enumerate(objects):
-            self.log.debug(
-                "Received split object {}: {}".format(idx, json.dumps(json.loads(obj)))
-            )
-            asyncio.ensure_future(self.process_data(obj))
+            try:
+                self.log.debug(
+                    "Received split object {}: {}".format(idx, json.dumps(json.loads(obj))))
+                asyncio.ensure_future(self.process_data(obj))
+            except json.decoder.JSONDecodeError as e:
+                self.log.warn("Could not decode: {}".format(obj))
 
     def connection_lost(self, error):
         if error:

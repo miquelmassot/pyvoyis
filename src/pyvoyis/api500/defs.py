@@ -346,7 +346,13 @@ def api_param_stills_to_str(value):
     elif value == API_PARAM_STILLS_ADVANCED_WHITE_BALANCE:
         return "API_PARAM_STILLS_ADVANCED_WHITE_BALANCE"
     elif value == API_PARAM_STILLS_ADVANCED_ADAPTIVE_LIGHTING:
-        return "API_PARAM_STILLS_ADVANCED_ADAPTIVE_LIGHTING"
+        return "API_PARAM_STILLS_ADVANCED_ADAPTIVE_LIGHTING" 
+    elif value == API_PARAM_DUMMY_0:
+        return "API_PARAM_DUMMY_0"
+    elif value == API_PARAM_DUMMY_1:
+        return "API_PARAM_DUMMY_1"
+    elif value == API_PARAM_ENABLE_RAM_BUFF_MONITOR:
+        return "API_PARAM_ENABLE_RAM_BUFF_MONITOR"
     else:
         print("Unknown API parameter:", value)
         return "Unknown"

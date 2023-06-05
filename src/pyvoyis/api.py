@@ -25,6 +25,7 @@ from pyvoyis.api500.defs import (
     ENDPOINT_ID_STREAM,
     ENDPOINT_ID_XYZ_LASER,
     NAVPROTO_PSONNAV,
+    SCANNER_NOT_READY,
     SCANNER_CONNECTED_TO_THIS_API,
     SCANNER_PARAM_INDEX_OF_REFRACTION,
     SCANNER_PARAM_LASER_FREQ,
@@ -88,6 +89,7 @@ from pyvoyis.messages import (
 )
 from pyvoyis.state_machine import VoyisAPIStateMachine
 from pyvoyis.tools.bool2str import bool2str
+from pyvoyis.tools.str2bool import str2bool
 from pyvoyis.tools.rate import Rate
 from pyvoyis.tools.safe_get import safe_get
 
@@ -108,6 +110,8 @@ class VoyisAPI:
         self.state = VoyisAPIStateMachine()
         self.cmd = VoyisCommander()
 
+        self.last_connection_state = 0
+
         self.api_status_not_dict = {}
         self.scanner_list_not_dict = {}
         self.scanner_parameters_not_dict = {}
@@ -118,11 +122,7 @@ class VoyisAPI:
         self.api_version_not_list = []
         self.api_status_list = []
         self.connection_change_not_list = []
-        self.scanner_status_list = []
         self.leak_detection_not_list = []
-        self.scanner_parameter_list = []
-        self.api_configuration_list = []
-        self.endpoint_configuration_list = []
         self.correction_model_load_not_list = []
         self.correction_model_list_not_list = []
         self.pending_cmd_status_not_list = []
@@ -139,7 +139,7 @@ class VoyisAPI:
         """Request stop"""
         self._request_stop = True
 
-    def send_message(self, cmd, timeout_s=6.0):
+    def send_message(self, cmd, timeout_s=10.0, retries=2, expect_ack=True):
         """Sends a message to the API500Client
 
         Parameters
@@ -154,8 +154,12 @@ class VoyisAPI:
         bool
             True if the command was accepted, False otherwise
         """
+        if retries <= 0:
+            return False
         len_ack_before = len(self.ack_rsp_list)
         self.loop.run_until_complete(self.client.send_message(cmd.to_str()))
+        if not expect_ack: 
+            return True
         # Wait for AckRsp to be received
         timeout_start = time.time()
         while time.time() < timeout_start + timeout_s:
@@ -174,6 +178,7 @@ class VoyisAPI:
                 self.log.info("Command {} accepted!".format(cmd.command))
             return ack_rsp.accepted
         else:
+            self.send_message(cmd, timeout_s=timeout_s, retries=retries-1)
             return False
 
     def get_received_messages(self):
@@ -273,6 +278,18 @@ class VoyisAPI:
             if not success:
                 self.log.error("Could not check temperatures")
                 return
+            
+            """
+            # Do a network time sync
+            self.cmd.network_time_sync.payload = {
+                "microseconds_since_epoch": int(time.time()*1e6)
+            }
+            success = self.send_message(self.cmd.network_time_sync)
+            if not success:
+                self.log.error("Could not sync network time")
+                return
+            """
+
             self.state.ready()
         if self.state.is_readying and self._request_acquisition:
             self._request_acquisition = False
@@ -359,16 +376,35 @@ class VoyisAPI:
             True if the connection was successful, False otherwise
         """
         self.log.info("[VoyisAPI]: Connecting to scanner...")
+        success = self.send_message(self.cmd.list_scanners)
+        if not success:
+            return False
+        
         self.cmd.check_for_scanner.payload = {"ip_address": self.ip}
         success = self.send_message(self.cmd.check_for_scanner)
 
         if not success:
             return False
 
-        if not self.is_scanner_connected():
+        while not self.is_scanner_connected():
             self.cmd.connect_scanner.payload = {"ip_address": self.ip}
-            return self.send_message(self.cmd.connect_scanner)
-        return True
+            success =  self.send_message(self.cmd.connect_scanner)
+            if not success:
+                return False
+            if self.last_connection_state == 5:
+                break
+            self.log.info("Waiting 5 seconds before requesting for a connection")
+            time.sleep(5)
+
+        scanner_connected = False
+        retries = 0
+        while not scanner_connected and retries < 5:
+            if SCANNER_STATUS_CONNECTED in self.scanner_status_not_dict:
+                scanner_connected = str2bool(self.scanner_status_not_dict[SCANNER_STATUS_CONNECTED].value.get())
+            retries += 1
+            time.sleep(1)
+
+        return scanner_connected
 
     def check_connection_status(self):
         """Check connection status
@@ -400,7 +436,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoind_id.log,
+                "file_name": self.config.endpoint_id.log,
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -408,7 +444,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoind_id.stream,
+                "file_name": self.config.endpoint_id.stream,
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -416,7 +452,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoind_id.xyz_laser,
+                "file_name": self.config.endpoint_id.xyz_laser,
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -424,7 +460,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoind_id.sensor_laser,
+                "file_name": self.config.endpoint_id.sensor_laser,
                 "file_max_bytes": 0,
             },
             {
@@ -432,7 +468,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoind_id.sensor_stills_raw,
+                "file_name": self.config.endpoint_id.sensor_stills_raw,
                 "file_max_bytes": 0,
             },
             {
@@ -440,7 +476,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoind_id.sensor_stills_processed,
+                "file_name": self.config.endpoint_id.sensor_stills_processed,
                 "file_max_bytes": 0,
             },
         ]
@@ -464,30 +500,46 @@ class VoyisAPI:
         bool
             True if the scanner is connected to this API, False otherwise
         """
-        self.send_message(self.cmd.list_scanners)
+        #self.send_message(self.cmd.list_scanners)
 
-        self.cmd.check_for_scanner.payload = {"ip_address": self.ip}
-        self.send_message(self.cmd.check_for_scanner)
+        #self.cmd.check_for_scanner.payload = {"ip_address": self.ip}
+        #self.send_message(self.cmd.check_for_scanner)
 
         while len(self.scanner_list_not_dict) == 0:
             time.sleep(1)
             self.log.info("Waiting for ScannerListNot")
             if not self.client.connected:
                 return False
-
-        scanner_connection_state = safe_get(self.scanner_list_not_dict, self.ip)
+            
+        scanner_connection_state = int(safe_get(self.scanner_list_not_dict, self.ip))
         if scanner_connection_state is None:
             self.log.warning("Scanner not found in ScannerListNot")
             return False
 
-        self.log.info("[VoyisAPI]: Scanner found in ScannerListNot")
+        self.log.debug("[VoyisAPI]: Scanner found in ScannerListNot")
         self.log.info(
             "[VoyisAPI]: Scanner connection state: {}".format(
                 scanner_connection_to_str(scanner_connection_state)
             )
         )
 
+        if scanner_connection_state < SCANNER_NOT_READY:
+            self.log.warn("Scanner is not ready, resetting comms...")
+            self.state.reset()
+
         return scanner_connection_state == SCANNER_CONNECTED_TO_THIS_API
+    
+    def wait_for_scanning_status(self, expected_value):
+        status_achieved = False
+        while not status_achieved:
+            success = self.get_scanner_status()
+            if SCANNER_STATUS_SCAN_IN_PROGRESS not in self.scanner_status_not_dict:
+                continue
+            res = str2bool(self.scanner_status_not_dict[SCANNER_STATUS_SCAN_IN_PROGRESS].value.get())
+            if res == expected_value:
+                break
+            self.log.info("Waiting for SCANNER_STATUS_SCAN_IN_PROGRESS to become {}".format(expected_value))
+            time.sleep(5)
 
     def stop_scanning_if_running(self):
         """Helper function to stop scanning if it is running
@@ -497,10 +549,13 @@ class VoyisAPI:
         bool
             True if the scanner was stopped, False otherwise
         """
-        success = False
-        if SCANNER_STATUS_SCAN_IN_PROGRESS not in self.scanner_status_not_dict:
-            self.log.debug("Assumed scanner is not scanning...")
-            return True
+        success = self.stop_scanning()
+        self.wait_for_scanning_status(False)
+        """
+        while not success:
+            if SCANNER_STATUS_SCAN_IN_PROGRESS in self.scanner_status_not_dict:
+                break
+            time.sleep(1)
 
         while self.scanner_status_not_dict[SCANNER_STATUS_SCAN_IN_PROGRESS].value:
             self.log.info("Scan in progress, trying to stop it...")
@@ -508,6 +563,8 @@ class VoyisAPI:
             if success:
                 break
             time.sleep(5)
+        self.wait_for_scanning_status(False)
+        """
         return success
 
     def perform_system_checks(self):
@@ -577,32 +634,32 @@ class VoyisAPI:
         self.log.info("[VoyisAPI]: Device status:")
         self.log.info(
             "  * API: {} {}".format(
-                "Connected" if api_connected else "NOT Connected",
-                "Ready" if api_ready else "NOT Ready",
+                "Connected" if str2bool(api_connected.value.get()) else "NOT Connected",
+                "Ready" if str2bool(api_ready.value.get()) else "NOT Ready",
             )
         )
         self.log.info(
             "  * Stills camera: {} {}".format(
-                "Connected" if stills_cam_connected else "NOT Connected",
-                "Ready" if stills_cam_ready else "NOT Ready",
+                "Connected" if str2bool(stills_cam_connected.value.get()) else "NOT Connected",
+                "Ready" if str2bool(stills_cam_ready.value.get()) else "NOT Ready",
             )
         )
         self.log.info(
             "  * Laser camera: {} {}".format(
-                "Connected" if laser_cam_connected else "NOT Connected",
-                "Ready" if laser_cam_ready else "NOT Ready",
+                "Connected" if laser_cam_connected.value.get() else "NOT Connected",
+                "Ready" if laser_cam_ready.value.get() else "NOT Ready",
             )
         )
         self.log.info(
             "  * Laser: {} {}".format(
-                "Connected" if laser_connected else "NOT Connected",
-                "Ready" if laser_ready else "NOT Ready",
+                "Connected" if str2bool(laser_connected.value.get()) else "NOT Connected",
+                "Ready" if str2bool(laser_ready.value.get()) else "NOT Ready",
             )
         )
         self.log.info(
             "  * LED panel: {} {}".format(
-                "Connected" if led_panel_connected else "NOT Connected",
-                "Ready" if led_panel_ready else "NOT Ready",
+                "Connected" if str2bool(led_panel_connected.value.get()) else "NOT Connected",
+                "Ready" if str2bool(led_panel_ready.value.get()) else "NOT Ready",
             )
         )
 
@@ -660,21 +717,21 @@ class VoyisAPI:
             True if the command was successful, False otherwise
         """
         self.log.info("[VoyisAPI]: Setting scan parameters...")
-        cfg = self.config.scanner_param.s
+        cfg = self.config.scanner_param
         self.cmd.set_local_scanner_parameters.payload = [
             {
                 "parameter_id": SCANNER_PARAM_PROFILE_STILLS_EXP,
-                "value": str(cfg.scanner_param.stills_exp_us),
+                "value": str(cfg.stills_exp_us),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_LASER_FREQ,
-                "value": str(int(cfg.scanner_param.laser_freq_hz * 1000)),
+                "value": str(int(cfg.laser_freq_hz * 1000)),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": SCANNER_PARAM_STILL_FREQ,
-                "value": str(int(cfg.scanner_param.stills_freq_hz * 1000)),
+                "value": str(int(cfg.stills_freq_hz * 1000)),
                 "type": VALUE_TYPE_UINT,
             },
             {  # If true, laser freq is 1 Hz
@@ -726,11 +783,17 @@ class VoyisAPI:
         success = self.send_message(self.cmd.apply_local_scanner_parameters)
         if not success:
             return False
+        
+        """
+        success = self.send_message(self.cmd.query_api_configuration)
+        if not success:
+            return False
 
+        cfg = self.config.api_param_stills
         self.cmd.set_api_configuration.payload = [
             {
                 "parameter_id": API_PARAM_STILLS_IMAGE_UNDISTORT,
-                "value": bool2str(cfg.undistort_images, "1", "0"),
+                "value": bool2str(cfg.undistort, "1", "0"),
                 "type": VALUE_TYPE_UINT,
             },
             {
@@ -740,11 +803,20 @@ class VoyisAPI:
             },
             {
                 "parameter_id": API_PARAM_STILLS_PROCESSED_IMAGE_FORMAT,
-                "value": bool2str(cfg.processed_image_format, "1", "0"),
+                "value": cfg.processed_image_format_uint,
                 "type": VALUE_TYPE_UINT,
             },
         ]
-        return self.send_message(self.cmd.set_api_configuration)
+        success =  self.send_message(self.cmd.set_api_configuration, expect_ack=False)
+        if not success:
+            return False
+    
+        success = self.send_message(self.cmd.query_api_configuration)
+        if not success:
+            return False
+        """
+        
+        return True
 
     def check_laser_is_armed(self):
         """Helper function to check if the laser is armed
@@ -857,7 +929,7 @@ class VoyisAPI:
                 )
             )
         if internal_temp_ch is not None:
-            return internal_temp_ch.value.get() < 60
+            return int(internal_temp_ch.value.get()) < 60
         else:
             return True
 
@@ -970,6 +1042,7 @@ class VoyisAPI:
                 self.scanner_list_not_dict[
                     msg_class.ip_addresses[idx]
                 ] = msg_class.connection_states[idx]
+            self.last_connection_state = int(safe_get(self.scanner_list_not_dict, self.ip))
         elif message == "ConnectionChangeNot":
             msg_class = ConnectionChangeNot(data)
             self.connection_change_not_list.append(msg_class)

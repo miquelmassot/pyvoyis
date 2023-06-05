@@ -18,9 +18,17 @@ class ApiParamStillsConfig(BaseModel):
 
     @validator("processed_image_format")
     def valid_processed_image_format(cls, v):
-        if v not in ["jpg", "tiff"]:
+        if v not in ["jpg", "tiff", "tif", "jpeg"]:
             raise ValueError('processed_image_format must be "jpg" or "tiff"')
         return v
+    
+    @property
+    def processed_image_format_uint(self):
+        if self.processed_image_format in ["tiff", "tif"]:
+            return 0
+        elif self.processed_image_format in ["jpeg", "jpg"]:
+            return 1
+
 
 
 class ScannerParamConfig(BaseModel):
