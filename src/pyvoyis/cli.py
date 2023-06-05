@@ -8,10 +8,9 @@ See LICENSE.md file in the project root for full license information.
 """
 
 import argparse
-import logging
 
 from pyvoyis import Configuration, VoyisAPI
-from pyvoyis.tools.custom_logger import setup_logging
+
 
 
 def main():
@@ -31,15 +30,14 @@ def main():
     if args.log_path:
         config.log_path = args.log_path
 
-    setup_logging(config.log_path)
-    log = logging.getLogger("VoyisROS")
-    log.info("Starting Voyis API client")
+    
+    print("Starting Voyis API client")
 
     if args.ip:
-        log.info("Using provided IP address: %s", args.ip)
+        print("Using provided IP address: %s", args.ip)
         config.ip_address = args.ip
     if args.port:
-        log.info("Using provided port: %s", args.port)
+        print("Using provided port: %s", args.port)
         config.port = args.port
 
     api = VoyisAPI(config)

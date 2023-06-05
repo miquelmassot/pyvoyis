@@ -13,6 +13,7 @@ from pathlib import Path
 
 import nest_asyncio
 
+from pyvoyis.tools.custom_logger import setup_logging
 from pyvoyis.api500 import API500Client
 from pyvoyis.api500.defs import (
     API_PARAM_STILLS_IMAGE_SAVE_ORIGINAL,
@@ -100,12 +101,26 @@ class VoyisAPI:
     def __init__(self, config):
         """Class to handle the Voyis API"""
         self.config = config
+        setup_logging(config.log_path)
+
+        print(self.config)
+
         self.ip = config.ip_address
         self.port = config.port
         self.log = logging.getLogger("VoyisAPI")
         self.event = threading.Event()
         self.task_set = set()
-        self.loop = asyncio.get_event_loop()
+
+        # Handle RuntimeError: There is no current event loop in thread 'Thread-1'.
+        try:
+            self.loop = asyncio.get_event_loop()
+        except RuntimeError as e:
+            if str(e).startswith('There is no current event loop in thread'):
+                self.loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self.loop)
+            else:
+                raise
+
         self.client = API500Client(self.ip, self.port, self.loop, self.task_set)
         self.state = VoyisAPIStateMachine()
         self.cmd = VoyisCommander()
@@ -320,7 +335,7 @@ class VoyisAPI:
             if not success:
                 self.log.error("Could not disconnect")
                 return
-            self.state.idle()
+            self.state.idling()
 
     def run(self):
         """Main function to run the API client"""

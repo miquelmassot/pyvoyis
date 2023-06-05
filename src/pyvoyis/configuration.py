@@ -28,6 +28,13 @@ class ApiParamStillsConfig(BaseModel):
             return 0
         elif self.processed_image_format in ["jpeg", "jpg"]:
             return 1
+        
+    def __str__(self):
+        msg = ""
+        msg += "\n    undistort: " + str(self.undistort)
+        msg += "\n    save_original: " + str(self.save_original)
+        msg += "\n    processed_image_format: " + str(self.processed_image_format)
+        return msg
 
 
 
@@ -124,6 +131,23 @@ class ScannerParamConfig(BaseModel):
         elif v > 2:
             raise ValueError("stills_image_level must be <= 2")
         return v
+    
+
+    def __str__(self):
+        msg = ""
+        msg += "\n    stills_exp_us:" + str(self.stills_exp_us)
+        msg += "\n    laser_exp_us:" + str(self.laser_exp_us)
+        msg += "\n    laser_freq_hz:" + str(self.laser_freq_hz)
+        msg += "\n    stills_freq_hz:" + str(self.stills_freq_hz)
+        msg += "\n    save_laser_images:" + str(self.save_laser_images)
+        msg += "\n    laser_min_range_cm:" + str(self.laser_min_range_cm)
+        msg += "\n    laser_max_range_cm:" + str(self.laser_max_range_cm)
+        msg += "\n    index_of_refraction:" + str(self.index_of_refraction)
+        msg += "\n    led_panel_intensity_percentage:" + str(self.led_panel_intensity_percentage)
+        msg += "\n    laser_gain_percentage:" + str(self.laser_gain_percentage)
+        msg += "\n    stills_image_level:" + str(self.stills_image_level)
+        msg += "\n    laser_disable_range_gating:" + str(self.laser_disable_range_gating)
+        return msg
 
 
 class EndpointIdConfig(BaseModel):
@@ -133,6 +157,15 @@ class EndpointIdConfig(BaseModel):
     sensor_laser: str = "/data/data/default/laser/raw/"
     sensor_stills_raw: str = "/data/data/default/stills/raw/"
     sensor_stills_processed: str = "/data/data/default/stills/processed/"
+
+    def __str__(self):
+        msg = "    log: " + self.log
+        msg += "\n    stream: " + self.stream
+        msg += "\n    xyz_laser: " + self.xyz_laser
+        msg += "\n    sensor_laser: " + self.sensor_laser
+        msg += "\n    sensor_stills_raw: " + self.sensor_stills_raw
+        msg += "\n    sensor_stills_processed: " + self.sensor_stills_processed
+        return msg
 
 
 class Configuration(BaseModel):
@@ -156,3 +189,13 @@ class Configuration(BaseModel):
         stream = configuration_file.open("r")
         data = yaml.safe_load(stream)
         super().__init__(**data)
+
+    def __str__(self):
+        msg = "Configuration: " + self.ip_address
+        msg += "\n  ip_address: " + self.ip_address
+        msg += "\n  port: " + str(self.port)
+        msg += "\n  log_path: " + self.log_path
+        msg += "\n  api_param_stills: " + str(self.api_param_stills)
+        msg += "\n  scanner_param: " + str(self.scanner_param)
+        msg += "\n  endpoint_id: " + str(self.endpoint_id)
+        return msg
