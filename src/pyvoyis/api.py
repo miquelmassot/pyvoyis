@@ -269,18 +269,14 @@ class VoyisAPI:
             success = self.stop_scanning_if_running()
             if not success:
                 self.log.error("Could not stop scanning")
-            """
             success = self.configure_time_source()
             if not success:
                 self.log.error('Could not configure time source')
                 return
-            """
-            """
             success = self.configure_nav()
             if not success:
                 self.log.error('Could not configure nav')
                 return
-            """
             success = self.set_scan_parameters()
             if not success:
                 self.log.error("Could not set scan parameters")
@@ -393,24 +389,28 @@ class VoyisAPI:
         self.log.info("[VoyisAPI]: Connecting to scanner...")
         success = self.send_message(self.cmd.list_scanners)
         if not success:
+            self.log.warn("Command list_scanners was not successful")
             return False
         
         self.cmd.check_for_scanner.payload = {"ip_address": self.ip}
         success = self.send_message(self.cmd.check_for_scanner)
 
         if not success:
+            self.log.warn("Command check_for_scanner was not successful")
             return False
 
         while not self.is_scanner_connected():
             self.cmd.connect_scanner.payload = {"ip_address": self.ip}
             success =  self.send_message(self.cmd.connect_scanner)
             if not success:
+                self.log.warn("Command connect_scanner was not successful")
                 return False
             if self.last_connection_state == 5:
                 break
             self.log.info("Waiting 5 seconds before requesting for a connection")
             time.sleep(5)
 
+        """
         scanner_connected = False
         retries = 0
         while not scanner_connected and retries < 5:
@@ -418,8 +418,13 @@ class VoyisAPI:
                 scanner_connected = str2bool(self.scanner_status_not_dict[SCANNER_STATUS_CONNECTED].value.get())
             retries += 1
             time.sleep(1)
+        
+        if not scanner_connected:
+            self.log.warn("The state SCANNER_STATUS_CONNECTED was never set.")
 
         return scanner_connected
+        """
+        return True
 
     def check_connection_status(self):
         """Check connection status
@@ -661,8 +666,8 @@ class VoyisAPI:
         )
         self.log.info(
             "  * Laser camera: {} {}".format(
-                "Connected" if laser_cam_connected.value.get() else "NOT Connected",
-                "Ready" if laser_cam_ready.value.get() else "NOT Ready",
+                "Connected" if str2bool(laser_cam_connected.value.get()) else "NOT Connected",
+                "Ready" if str2bool(laser_cam_ready.value.get()) else "NOT Ready",
             )
         )
         self.log.info(
@@ -678,7 +683,6 @@ class VoyisAPI:
             )
         )
 
-        """
         return (
             api_ready
             and stills_cam_ready
@@ -686,8 +690,6 @@ class VoyisAPI:
             and laser_ready
             and led_panel_ready
         )
-        """
-        return True
 
     def configure_time_source(self):
         """Sends command to configure time source
@@ -700,8 +702,8 @@ class VoyisAPI:
         self.log.info("[VoyisAPI]: Configuring time source...")
 
         self.cmd.set_time_tag_source.payload = {
-            "network": SOURCE_TCP_CLIENT,
-            "connection": "4010",
+            "network": SOURCE_TCP_SERVER,
+            "connection": "192.168.10.26:4010",
         }
 
         return self.send_message(self.cmd.set_time_tag_source)
@@ -719,7 +721,7 @@ class VoyisAPI:
         self.cmd.set_nav_data_source.payload = {
             "network": SOURCE_TCP_SERVER,
             "protocol": NAVPROTO_PSONNAV,
-            "connection": "192.168.179.10:4003",
+            "connection": "192.168.10.26:4003",
         }
         return self.send_message(self.cmd.set_nav_data_source)
 
