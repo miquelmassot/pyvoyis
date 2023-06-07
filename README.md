@@ -100,15 +100,6 @@ The scanner does not accept the nav source. The following error is returned:
 
 Also tried with port only, and with either TCP_CLIENT or TCP_SERVER. Same result.
 
-### Laser safety
-The following keys return true regardless of the dongles being connected, armed or disarmed. How can we verify what is connected or not?
-
-```
-SCANNER_STATUS_LASER_DONGLE_AT_CH
-SCANNER_STATUS_LASER_INHIBIT_ENABLED
-SCANNER_STATUS_LASER_SAFETY_DISABLED
-```
-
 ### Can the laser be disabled via software?
 Answer unkown.
 
