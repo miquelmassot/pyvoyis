@@ -9,6 +9,7 @@ from pathlib import Path
 
 import yaml
 from pydantic import BaseModel, validator
+from typing import Optional
 
 
 class ApiParamStillsConfig(BaseModel):
@@ -168,10 +169,24 @@ class EndpointIdConfig(BaseModel):
         return msg
 
 
+class NetworkInput(BaseModel):
+    ip_address:str = ""
+    mode:str = ""
+    driver:Optional(str) = None
+
+    @validator("mode")
+    def mode_is_valid(self, v):
+        if v.lower() not in ["tcp_client", "tcp_server", "udp", "com", "multicast"]:
+            raise ValueError('Mode needs to be TCP_CLIENT, TCP_SERVER, UDP, MULTICAST or COM in upper or lowercase characters.')
+        return v
+
+
 class Configuration(BaseModel):
     api_param_stills: ApiParamStillsConfig = ApiParamStillsConfig()
     scanner_param: ScannerParamConfig = ScannerParamConfig()
     endpoint_id: EndpointIdConfig = EndpointIdConfig()
+    pps_input: NetworkInput = NetworkInput()
+    navigation_input: NetworkInput = NetworkInput()
     ip_address: str = "localhost"
     port: int = 4875
     log_path: str = "logs"

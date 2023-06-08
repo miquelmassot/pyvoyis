@@ -66,6 +66,8 @@ from pyvoyis.api500.defs import (
     VALUE_TYPE_BOOL,
     VALUE_TYPE_UINT,
     scanner_connection_to_str,
+    str_to_navproto
+    str_to_network_source,
 )
 from pyvoyis.commander import VoyisCommander
 from pyvoyis.messages import (
@@ -702,8 +704,8 @@ class VoyisAPI:
         self.log.info("[VoyisAPI]: Configuring time source...")
 
         self.cmd.set_time_tag_source.payload = {
-            "network": SOURCE_TCP_SERVER,
-            "connection": "192.168.10.26:4010",
+            "network": str_to_network_source(self.config.pps_input.mode),
+            "connection": self.config.pps_input.ip_address,
         }
 
         return self.send_message(self.cmd.set_time_tag_source)
@@ -719,9 +721,9 @@ class VoyisAPI:
         self.log.info("[VoyisAPI]: Configuring nav...")
 
         self.cmd.set_nav_data_source.payload = {
-            "network": SOURCE_TCP_SERVER,
-            "protocol": NAVPROTO_PSONNAV,
-            "connection": "192.168.10.26:4003",
+            "network": str_to_network_source(self.config.navigation_input.mode),
+            "protocol": str_to_navproto(self.config.navigation_input.driver),
+            "connection": self.config.navigation_input.ip_address,
         }
         return self.send_message(self.cmd.set_nav_data_source)
 

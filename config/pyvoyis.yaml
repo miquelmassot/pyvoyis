@@ -8,6 +8,15 @@ api_param_stills:
   # tiff (uncompressed) or jpg (compressed)
   processed_image_format: jpg
 
+pps_input:
+  ip_address: 192.168.10.26:4010
+  mode: tcp_server
+
+navigation_input:
+  ip_address: 192.168.10.26:4003
+  mode: tcp_server
+  driver: psonnav
+
 scanner_param:
   # Stills camera
   stills_freq_hz: 0.5
@@ -36,7 +45,6 @@ scanner_param:
 
   # Refraction
   index_of_refraction: 1.35
-
 
 endpoint_id:
   log: /data/data/smarty200/log

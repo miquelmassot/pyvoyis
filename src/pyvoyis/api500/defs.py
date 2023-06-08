@@ -1210,6 +1210,18 @@ SOURCE_TCP_CLIENT = 2
 SOURCE_TCP_SERVER = 3
 SOURCE_MULTICAST = 4
 
+def str_to_network_source(value:str):
+    if value.lower() == "com":
+        return SOURCE_COM
+    elif value.lower() == "udp":
+        return SOURCE_UDP
+    elif value.lower() == "tcp_client":
+        return SOURCE_TCP_CLIENT
+    elif value.lower() == "tcp_server":
+        return SOURCE_TCP_SERVER
+    elif value.lower() == "multicast":
+        return SOURCE_MULTICAST
+
 
 def source_to_str(value):
     if value == SOURCE_COM:
@@ -1244,6 +1256,29 @@ NAVPROTO_NAVLAB = 60  # NAVLAB format
 NAVPROTO_IXBLUESTD = 70  # IXBlue Std format
 NAVPROTO_PHINSSTD = 80  # PHINS Std format supports range
 NAVPROTO_PSONNAV = 1  # Sonardyne PSONNAV format
+
+
+def str_to_navproto(value:str):
+    if value.lower() == "raw":
+        return NAVPROTO_RAW
+    if value.lower() == "lnav":
+        return NAVPROTO_LNAV
+    if value.lower() == "delphins":
+        return NAVPROTO_DELPHINS
+    if value.lower() == "ise":
+        return NAVPROTO_ISE
+    if value.lower() == "kongsberg":
+        return NAVPROTO_KONGSBERG
+    if value.lower() == "rovins":
+        return NAVPROTO_ROVINS
+    if value.lower() == "navlab":
+        return NAVPROTO_NAVLAB
+    if value.lower() == "ixbluestd":
+        return NAVPROTO_IXBLUESTD
+    if value.lower() == "phinsstd":
+        return NAVPROTO_PHINSSTD
+    if value.lower() == "psonnav":
+        return NAVPROTO_PSONNAV
 
 
 def navproto_to_str(value):
