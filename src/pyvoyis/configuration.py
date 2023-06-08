@@ -160,7 +160,7 @@ class EndpointIdConfig(BaseModel):
     sensor_stills_processed: str = "/data/data/default/stills/processed/"
 
     def __str__(self):
-        msg = "    log: " + self.log
+        msg = "\n    log: " + self.log
         msg += "\n    stream: " + self.stream
         msg += "\n    xyz_laser: " + self.xyz_laser
         msg += "\n    sensor_laser: " + self.sensor_laser
@@ -172,13 +172,20 @@ class EndpointIdConfig(BaseModel):
 class NetworkInput(BaseModel):
     ip_address:str = ""
     mode:str = ""
-    driver:Optional(str) = None
+    driver:Optional[str] = None
 
     @validator("mode")
-    def mode_is_valid(self, v):
+    def mode_is_valid(cls, v):
         if v.lower() not in ["tcp_client", "tcp_server", "udp", "com", "multicast"]:
             raise ValueError('Mode needs to be TCP_CLIENT, TCP_SERVER, UDP, MULTICAST or COM in upper or lowercase characters.')
         return v
+
+    def __str__(self):
+        msg = "\n    ip_address: " + self.ip_address
+        msg += "\n    mode: " + self.mode
+        if self.driver is not None:
+            msg += "\n    driver: " + self.driver
+        return msg
 
 
 class Configuration(BaseModel):
@@ -209,6 +216,8 @@ class Configuration(BaseModel):
         msg = "Configuration: " + self.ip_address
         msg += "\n  ip_address: " + self.ip_address
         msg += "\n  port: " + str(self.port)
+        msg += "\n  navigation_input:" + str(self.navigation_input)
+        msg += "\n  pps_input:" + str(self.pps_input)
         msg += "\n  log_path: " + self.log_path
         msg += "\n  api_param_stills: " + str(self.api_param_stills)
         msg += "\n  scanner_param: " + str(self.scanner_param)

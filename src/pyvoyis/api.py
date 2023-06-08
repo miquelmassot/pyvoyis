@@ -66,7 +66,7 @@ from pyvoyis.api500.defs import (
     VALUE_TYPE_BOOL,
     VALUE_TYPE_UINT,
     scanner_connection_to_str,
-    str_to_navproto
+    str_to_navproto,
     str_to_network_source,
 )
 from pyvoyis.commander import VoyisCommander
