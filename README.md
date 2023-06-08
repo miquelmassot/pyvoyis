@@ -33,81 +33,15 @@ pyvoyis --ip 192.168.1.10 --port 4875
 and it will start the acquisition and block until it's stopped with Ctrl+C.
 
 
-## Known issues
+## Notes
 
-### Time source does not work
-I've set up a ZDA broadcast on port 4010. The scanner is connected to the same network and can ping the computer (192.168.1.71). The scanner is set to use the ZDA broadcast as its time source.
-
-Message sent:
-
-```json
-{
-    "message": "SetTimeTagSourceCmd",
-    "payload": {
-        "network": 2,
-        "connection": "192.168.1.71:4010"
-    }
-}
-```
-
-Received:
-
-```json
-{
-    "message": "AckRsp",
-    "payload": {
-        "accepted": false,
-        "command_id": 263,
-        "nack_error_code": 3,
-        "nack_error_string": "Bad Parameter.",
-        "api_version": "6.0.5.96dec0cc"
-    }
-}
-```
-
-
-### Nav source does not work
-
-We've set up a PSONNAV broadcast on port 4003. The scanner is connected to the same network and can ping the computer (192.168.179.10). The scanner is set to use the PSONNAV broadcast as its nav source.
-
-Message sent:
-
-```json
-{
-    "message": "SetNavDataSourceCmd",
-    "payload": {
-        "network": 3,
-        "protocol": 1,
-        "connection": "192.168.179.10:4003"
-    }
-}
-```
-
-The scanner does not accept the nav source. The following error is returned:
-
-```json
-{
-    "message": "AckRsp",
-    "payload": {
-        "accepted": false,
-        "command_id": 35,
-        "nack_error_code": 3,
-        "nack_error_string": "Bad Parameter.",
-        "api_version": "6.0.5.96dec0cc"
-    }
-}
-```
-
-Also tried with port only, and with either TCP_CLIENT or TCP_SERVER. Same result.
+If the IP address of the time source or nav source are not "pingable" the device does not report and AckRsp. Sometimes it might realise and return a "Bad parameter" error.
 
 ### Can the laser be disabled via software?
-Answer unkown.
+Set laser intensity to zero or laser camera frequency to 0 Hz.
 
 ### What is the difference between local_value and remote_value in scanner_parameters?
 Answer unkown.
-
-### Temperature and humidity sensors reliable?
-Only SCANNER_STATUS_INTERNAL_TEMP_CH works. Other report either 0 or 255.
 
 ### What are the max frequencies for cameras?
 If the raw laser images are saved to disk, its frequency is currently limited to 1 Hz.
