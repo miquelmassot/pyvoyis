@@ -1,6 +1,6 @@
 ip_address: 192.168.10.26
 port: 4875
-log_path: /home/user/.pyvoyis/logs
+log_path: /home/user/voyis
 
 pps_input:
   ip_address: 192.168.10.26:4010
@@ -37,18 +37,18 @@ parameters:
   # 0 - True Colour, 1 - Enhanced Colour
   stills_advanced_colour_mode: 1
   # 1 - LOW, 2 - MED, 3 - HIGH
-  stills_advanced_colour_enhancement_lvl: 2
+  stills_advanced_colour_enhancement_lvl: 1
   # 0 - Standard, 1 - Colour
-  stills_advanced_contrast_mode: 1
+  stills_advanced_contrast_mode: 0
   # 0 - OFF, 1 - LOW, 2 - MED, 3 - HIGH
-  stills_advanced_contrast_lvl: 2
+  stills_advanced_contrast_lvl: 1
   # Brightness and contrast ratios
   stills_advanced_brightness: 0.35
   stills_advanced_contrast: 0.15
   # 0 - disable, 1 - enable
-  stills_advanced_white_balance: 1
+  stills_advanced_white_balance: 0
   #  0 - disable, 1 - enable
-  stills_advanced_adaptive_lighting: 1
+  stills_advanced_adaptive_lighting: 0
 
   # Laser camera
   laser_freq_hz: 20.0

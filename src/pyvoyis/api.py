@@ -12,6 +12,7 @@ import os
 import datetime
 import time
 from pathlib import Path
+import yaml
 
 import nest_asyncio
 
@@ -111,13 +112,11 @@ class VoyisAPI:
     def __init__(self, config):
         """Class to handle the Voyis API"""
         self.config = config
-        setup_logging(config.log_path)
+        self.ip = self.config.ip_address
+        self.port = self.config.port
 
-        print(self.config)
+        self.start_logging()
 
-        self.ip = config.ip_address
-        self.port = config.port
-        self.log = logging.getLogger("VoyisAPI")
         self.event = threading.Event()
         self.task_set = set()
 
@@ -155,6 +154,26 @@ class VoyisAPI:
 
         self._request_acquisition = False
         self._request_stop = False
+
+    def start_logging(self):
+        # Set default path and logging
+        bp = self.config.endpoint_id.base_path
+        current_date = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        mp = current_date + "_" + self.config.endpoint_id.mission_postfix
+        self.default_path = os.path.join(bp, mp)
+        logging_folder = os.path.join(self.config.log_path, mp, "pyvoyis_logs")
+
+        print("Setting up logging in: ", logging_folder)
+        setup_logging(logging_folder)
+
+        # Copy configuration file to logging folder
+        new_file = os.path.join(logging_folder, "pyvoyis.yaml")
+        with open(new_file, "w") as f:
+            yaml.dump(self.config.dict(), f, default_flow_style=False)
+        print(self.config)
+
+        self.log = logging.getLogger("VoyisAPI")
+        self.log.info("Saving results to %s", self.default_path)
 
     def request_acquisition(self):
         """Request acquisition"""
@@ -448,18 +467,13 @@ class VoyisAPI:
         success = self.send_message(self.cmd.disable_nas)
         success = self.send_message(self.cmd.disable_local_storage)
 
-        bp = self.config.endpoint_id.base_path
-        current_date = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        mp = current_date + "_" + self.config.endpoint_id.mission_postfix
-        default_path = os.path.join(bp, mp)
-
         self.cmd.set_endpoints.payload = [
             {
                 "endpoint_id": ENDPOINT_ID_LOG,
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": os.path.join(default_path, self.config.endpoint_id.log),
+                "file_name": os.path.join(self.default_path, self.config.endpoint_id.log),
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -467,7 +481,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": os.path.join(default_path, self.config.endpoint_id.stream),
+                "file_name": os.path.join(self.default_path, self.config.endpoint_id.stream),
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -475,7 +489,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": os.path.join(default_path, self.config.endpoint_id.xyz_laser),
+                "file_name": os.path.join(self.default_path, self.config.endpoint_id.xyz_laser),
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -483,7 +497,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": os.path.join(default_path, self.config.endpoint_id.sensor_laser),
+                "file_name": os.path.join(self.default_path, self.config.endpoint_id.sensor_laser),
                 "file_max_bytes": 0,
             },
             {
@@ -491,7 +505,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": os.path.join(default_path, self.config.endpoint_id.sensor_stills_raw),
+                "file_name": os.path.join(self.default_path, self.config.endpoint_id.sensor_stills_raw),
                 "file_max_bytes": 0,
             },
             {
@@ -499,7 +513,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": os.path.join(default_path, self.config.endpoint_id.sensor_stills_processed),
+                "file_name": os.path.join(self.default_path, self.config.endpoint_id.sensor_stills_processed),
                 "file_max_bytes": 0,
             },
         ]
