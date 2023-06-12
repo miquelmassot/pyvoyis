@@ -13,9 +13,14 @@ pps_input:
   mode: tcp_server
 
 navigation_input:
-  ip_address: 192.168.10.26:4003
-  mode: tcp_server
+  ip_address: 192.168.10.10:4003
+  mode: tcp_client
   driver: psonnav
+
+range_input:
+  ip_address: 192.168.10.10:4004
+  mode: tcp_client
+  driver: lnav
 
 scanner_param:
   # Stills camera

@@ -1247,7 +1247,7 @@ def timeproto_to_str(value):
 
 # Supported Nav data protocols
 NAVPROTO_RAW = 0  # (not currently implemented)
-NAVPROTO_LNAV = 10  # Sonardyne LNAV format supports range
+NAVPROTO_LNAV = 1  # Sonardyne LNAV format supports range
 NAVPROTO_DELPHINS = 20  # DelphINS format
 NAVPROTO_ISE = 30  # ISE navigation format
 NAVPROTO_KONGSBERG = 40  # Kongsberg navigation format

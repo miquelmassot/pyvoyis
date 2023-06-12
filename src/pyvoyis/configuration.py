@@ -194,6 +194,7 @@ class Configuration(BaseModel):
     endpoint_id: EndpointIdConfig = EndpointIdConfig()
     pps_input: NetworkInput = NetworkInput()
     navigation_input: NetworkInput = NetworkInput()
+    range_input: NetworkInput = NetworkInput()
     ip_address: str = "localhost"
     port: int = 4875
     log_path: str = "logs"

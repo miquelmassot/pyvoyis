@@ -255,6 +255,14 @@ class VoyisAPI:
                 return
             self.state.configure()
         elif self.state.is_configuring:
+            success = self.configure_time_source()
+            if not success:
+                self.log.error('Could not configure time source. Check that the IP address provided for time sync is accessible from the Voyis API PC network.')
+                return
+            success = self.configure_nav()
+            if not success:
+                self.log.error('Could not configure nav. Check that the IP address provided for nav updates is accessible from the Voyis PC network.')
+                return
             success = self.set_data_options()
             if not success:
                 self.log.error("Could not set data options")
@@ -271,14 +279,6 @@ class VoyisAPI:
             success = self.stop_scanning_if_running()
             if not success:
                 self.log.error("Could not stop scanning")
-            success = self.configure_time_source()
-            if not success:
-                self.log.error('Could not configure time source. Check that the IP address provided for time sync is accessible from the Voyis API PC network.')
-                return
-            success = self.configure_nav()
-            if not success:
-                self.log.error('Could not configure nav. Check that the IP address provided for nav updates is accessible from the Voyis PC network.')
-                return
             success = self.set_scan_parameters()
             if not success:
                 self.log.error("Could not set scan parameters")
@@ -291,18 +291,6 @@ class VoyisAPI:
             if not success:
                 self.log.error("Could not check temperatures")
                 return
-            
-            """
-            # Do a network time sync
-            self.cmd.network_time_sync.payload = {
-                "microseconds_since_epoch": int(time.time()*1e6)
-            }
-            success = self.send_message(self.cmd.network_time_sync)
-            if not success:
-                self.log.error("Could not sync network time")
-                return
-            """
-
             self.state.ready()
         if self.state.is_readying and self._request_acquisition:
             self._request_acquisition = False
@@ -333,7 +321,7 @@ class VoyisAPI:
             if not success:
                 self.log.error("Could not disconnect")
                 return
-            self.state.idling()
+            self.state.reset()
 
     def run(self):
         """Main function to run the API client"""
@@ -725,7 +713,20 @@ class VoyisAPI:
             "protocol": str_to_navproto(self.config.navigation_input.driver),
             "connection": self.config.navigation_input.ip_address,
         }
-        return self.send_message(self.cmd.set_nav_data_source)
+        success = self.send_message(self.cmd.set_nav_data_source)
+
+        if not success:
+            self.log.warn("Could not set Navigation data source")
+            return False
+
+        self.cmd.set_range_data_source.payload = {
+            "network": str_to_network_source(self.config.range_input.mode),
+            "protocol": str_to_navproto(self.config.range_input.driver),
+            "connection": self.config.range_input.ip_address,
+
+        }
+
+        return self.send_message(self.cmd.set_range_data_source)
 
     def set_scan_parameters(self):
         """Sets the scan parameters
