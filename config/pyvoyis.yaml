@@ -1,5 +1,5 @@
 ip_address: 192.168.10.26
-port: 4075
+port: 4875
 log_path: logs
 
 api_param_stills:
