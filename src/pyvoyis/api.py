@@ -21,6 +21,15 @@ from pyvoyis.api500.defs import (
     API_PARAM_STILLS_IMAGE_SAVE_ORIGINAL,
     API_PARAM_STILLS_IMAGE_UNDISTORT,
     API_PARAM_STILLS_PROCESSED_IMAGE_FORMAT,
+    API_PARAM_STILLS_IMAGE_LEVEL,
+    API_PARAM_STILLS_ADVANCED_COLOUR_MODE,
+    API_PARAM_STILLS_ADVANCED_COLOUR_ENHANCEMENT_LVL,
+    API_PARAM_STILLS_ADVANCED_CONTRAST_MODE,
+    API_PARAM_STILLS_ADVANCED_CONTRAST_LVL,
+    API_PARAM_STILLS_ADVANCED_BRIGHTNESS,
+    API_PARAM_STILLS_ADVANCED_CONTRAST,
+    API_PARAM_STILLS_ADVANCED_WHITE_BALANCE,
+    API_PARAM_STILLS_ADVANCED_ADAPTIVE_LIGHTING,
     ENDPOINT_ID_LOG,
     ENDPOINT_ID_SENSOR_LASER,
     ENDPOINT_ID_SENSOR_STILLS_PROCESSED,
@@ -39,7 +48,6 @@ from pyvoyis.api500.defs import (
     SCANNER_PARAM_OUTPUT_LASER_DATA,
     SCANNER_PARAM_PROFILE_STILLS_EXP,
     SCANNER_PARAM_STILL_FREQ,
-    SCANNER_PARAM_STILLS_IMAGE_LEVEL,
     SCANNER_STATUS_CONNECTED,
     SCANNER_STATUS_CPU_TEMP_CH,
     SCANNER_STATUS_CPU_TEMP_LASER,
@@ -64,6 +72,7 @@ from pyvoyis.api500.defs import (
     SCANNER_STATUS_STILLS_CAMERA_READY,
     VALUE_TYPE_BOOL,
     VALUE_TYPE_UINT,
+    VALUE_TYPE_FLOAT,
     scanner_connection_to_str,
     str_to_navproto,
     str_to_network_source,
@@ -741,7 +750,7 @@ class VoyisAPI:
             True if the command was successful, False otherwise
         """
         self.log.info("[VoyisAPI]: Setting scan parameters...")
-        cfg = self.config.scanner_param
+        cfg = self.config.parameters
         self.cmd.set_local_scanner_parameters.payload = [
             {
                 "parameter_id": SCANNER_PARAM_PROFILE_STILLS_EXP,
@@ -793,11 +802,6 @@ class VoyisAPI:
                 "value": str(cfg.laser_gain_percentage),
                 "type": VALUE_TYPE_UINT,
             },
-            {
-                "parameter_id": SCANNER_PARAM_STILLS_IMAGE_LEVEL,
-                "value": str(cfg.stills_image_level),
-                "type": VALUE_TYPE_UINT,
-            },
         ]
 
         success = self.send_message(self.cmd.set_local_scanner_parameters)
@@ -812,21 +816,67 @@ class VoyisAPI:
         success = self.send_message(self.cmd.query_api_configuration)
         if not success:
             return False
-        cfg = self.config.api_param_stills
+        
+        self.log.info("[VoyisAPI]: Setting stills parameters...")   
         self.cmd.set_api_configuration.payload = [
             {
                 "parameter_id": API_PARAM_STILLS_IMAGE_UNDISTORT,
-                "value": bool2str(cfg.undistort, "1", "0"),
+                "value": bool2str(cfg.stills_undistort, "1", "0"),
                 "type": VALUE_TYPE_UINT,
             },
             {
                 "parameter_id": API_PARAM_STILLS_IMAGE_SAVE_ORIGINAL,
-                "value": bool2str(cfg.save_original, "true", "false"),
+                "value": bool2str(cfg.stills_save_original, "true", "false"),
                 "type": VALUE_TYPE_BOOL,
             },
             {
                 "parameter_id": API_PARAM_STILLS_PROCESSED_IMAGE_FORMAT,
-                "value": bool2str(cfg.processed_image_format_uint, "1", "0"),
+                "value": str(cfg.stills_processed_image_format_uint),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_IMAGE_LEVEL,
+                "value": str(cfg.stills_image_level),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_ADVANCED_COLOUR_MODE,
+                "value": str(cfg.stills_advanced_colour_mode),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_ADVANCED_COLOUR_ENHANCEMENT_LVL,
+                "value": str(cfg.stills_advanced_colour_enhancement_lvl),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_ADVANCED_CONTRAST_MODE,
+                "value": str(cfg.stills_advanced_contrast_mode),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_ADVANCED_CONTRAST_LVL,
+                "value": str(cfg.stills_advanced_contrast_lvl),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_ADVANCED_BRIGHTNESS,
+                "value": "{:.2f}".format(cfg.stills_advanced_brightness),
+                "type": VALUE_TYPE_FLOAT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_ADVANCED_CONTRAST,
+                "value": "{:.2f}".format(cfg.stills_advanced_contrast),
+                "type": VALUE_TYPE_FLOAT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_ADVANCED_WHITE_BALANCE,
+                "value": str(cfg.stills_advanced_white_balance),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": API_PARAM_STILLS_ADVANCED_ADAPTIVE_LIGHTING,
+                "value": str(cfg.stills_advanced_adaptive_lighting),
                 "type": VALUE_TYPE_UINT,
             },
         ]
@@ -891,65 +941,10 @@ class VoyisAPI:
         self.log.info("[VoyisAPI]: Checking temperatures")
         # Check temperatures
         cpu_temp_ch = safe_get(self.scanner_status_not_dict, SCANNER_STATUS_CPU_TEMP_CH)
-        internal_temp_ch = safe_get(
-            self.scanner_status_not_dict, SCANNER_STATUS_INTERNAL_TEMP_CH
-        )
-        sensor_temp_laser_sensor = safe_get(
-            self.scanner_status_not_dict, SCANNER_STATUS_SENSOR_TEMP_LASER_SENSOR
-        )
-        cpu_temp_laser = safe_get(
-            self.scanner_status_not_dict, SCANNER_STATUS_CPU_TEMP_LASER
-        )
-        internal_temp_laser_sensor = safe_get(
-            self.scanner_status_not_dict, SCANNER_STATUS_INTERNAL_TEMP_LASER_SENSOR
-        )
-        sensor_temp_stills_sensor = safe_get(
-            self.scanner_status_not_dict, SCANNER_STATUS_SENSOR_TEMP_STILLS_SENSOR
-        )
-        cpu_temp_stills = safe_get(
-            self.scanner_status_not_dict, SCANNER_STATUS_CPU_TEMP_STILLS
-        )
-        internal_temp_stills_sensor = safe_get(
-            self.scanner_status_not_dict, SCANNER_STATUS_INTERNAL_TEMP_STILLS_SENSOR
-        )
 
         self.log.info("Temperature readings:")
         if cpu_temp_ch is not None:
             self.log.info("  * cpu_temp_ch: {} C".format(cpu_temp_ch.value.get()))
-        if internal_temp_ch is not None:
-            self.log.info(
-                "  * internal_temp_ch: {} C".format(internal_temp_ch.value.get())
-            )
-        if sensor_temp_laser_sensor is not None:
-            self.log.info(
-                "  * sensor_temp_laser_sensor: {} C".format(
-                    sensor_temp_laser_sensor.value.get()
-                )
-            )
-        if cpu_temp_laser is not None:
-            self.log.info("  * cpu_temp_laser: {} C".format(cpu_temp_laser.value.get()))
-        if internal_temp_laser_sensor is not None:
-            self.log.info(
-                "  * internal_temp_laser_sensor: {} C".format(
-                    internal_temp_laser_sensor.value.get()
-                )
-            )
-        if sensor_temp_stills_sensor is not None:
-            self.log.info(
-                "  * sensor_temp_stills_sensor: {} C".format(
-                    sensor_temp_stills_sensor.value.get()
-                )
-            )
-        if cpu_temp_stills is not None:
-            self.log.info(
-                "  * cpu_temp_stills: {} C".format(cpu_temp_stills.value.get())
-            )
-        if internal_temp_stills_sensor is not None:
-            self.log.info(
-                "  * internal_temp_stills_sensor: {} C".format(
-                    internal_temp_stills_sensor.value.get()
-                )
-            )
         return True
 
     def start_scanning(self):

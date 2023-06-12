@@ -2,12 +2,6 @@ ip_address: 192.168.10.26
 port: 4875
 log_path: /home/user/.pyvoyis/logs
 
-api_param_stills:
-  undistort: true
-  save_original: true
-  # tiff (uncompressed) or jpg (compressed)
-  processed_image_format: jpg
-
 pps_input:
   ip_address: 192.168.10.26:4010
   mode: tcp_server
@@ -22,10 +16,17 @@ range_input:
   mode: tcp_client
   driver: lnav
 
-scanner_param:
+parameters:
   # Stills camera
   stills_freq_hz: 0.5
   stills_exp_us: 5000
+
+  # Undistort images
+  stills_undistort: true
+  # Save RAW TIFF images
+  stills_save_original: true
+  # tiff (uncompressed) or jpg (compressed)
+  stills_processed_image_format: jpg
 
   # Image levelling
   # * 0 - Disable leveling
@@ -33,6 +34,21 @@ scanner_param:
   # * 2 - Enable Realistic leveling
   # * 3 – Enable Advanced leveling (needs correction model)
   stills_image_level: 2
+  # 0 - True Colour, 1 - Enhanced Colour
+  stills_advanced_colour_mode: 1
+  # 1 - LOW, 2 - MED, 3 - HIGH
+  stills_advanced_colour_enhancement_lvl: 2
+  # 0 - Standard, 1 - Colour
+  stills_advanced_contrast_mode: 1
+  # 0 - OFF, 1 - LOW, 2 - MED, 3 - HIGH
+  stills_advanced_contrast_lvl: 2
+  # Brightness and contrast ratios
+  stills_advanced_brightness: 0.35
+  stills_advanced_contrast: 0.15
+  # 0 - disable, 1 - enable
+  stills_advanced_white_balance: 1
+  #  0 - disable, 1 - enable
+  stills_advanced_adaptive_lighting: 1
 
   # Laser camera
   laser_freq_hz: 20.0

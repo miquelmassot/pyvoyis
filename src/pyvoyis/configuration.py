@@ -12,33 +12,6 @@ from pydantic import BaseModel, validator
 from typing import Optional
 
 
-class ApiParamStillsConfig(BaseModel):
-    undistort: bool = False
-    save_original: bool = False
-    processed_image_format: str = "jpg"
-
-    @validator("processed_image_format")
-    def valid_processed_image_format(cls, v):
-        if v not in ["jpg", "tiff", "tif", "jpeg"]:
-            raise ValueError('processed_image_format must be "jpg" or "tiff"')
-        return v
-    
-    @property
-    def processed_image_format_uint(self):
-        if self.processed_image_format in ["tiff", "tif"]:
-            return 0
-        elif self.processed_image_format in ["jpeg", "jpg"]:
-            return 1
-        
-    def __str__(self):
-        msg = ""
-        msg += "\n    undistort: " + str(self.undistort)
-        msg += "\n    save_original: " + str(self.save_original)
-        msg += "\n    processed_image_format: " + str(self.processed_image_format)
-        return msg
-
-
-
 class ScannerParamConfig(BaseModel):
     stills_exp_us: int = 5000
     laser_exp_us: int = 1000
@@ -51,7 +24,31 @@ class ScannerParamConfig(BaseModel):
     led_panel_intensity_percentage: int = 100
     laser_gain_percentage: int = 100
     stills_image_level: int = 2
+    stills_advanced_colour_mode: int = 0
+    stills_advanced_colour_enhancement_lvl: int = 1
+    stills_advanced_contrast_mode: int = 0
+    stills_advanced_contrast_lvl: int = 0
+    stills_advanced_brightness: float = 0.4
+    stills_advanced_contrast: float = 0.15
+    stills_advanced_white_balance: int = 0
+    stills_advanced_adaptive_lighting: int = 0
+    stills_undistort: bool = False
+    stills_save_original: bool = False
+    stills_processed_image_format: str = "jpg"
     laser_disable_range_gating: bool = False
+
+    @validator("stills_processed_image_format")
+    def valid_stills_processed_image_format(cls, v):
+        if v not in ["jpg", "tiff", "tif", "jpeg"]:
+            raise ValueError('stills_processed_image_format must be "jpg" or "tiff"')
+        return v
+    
+    @property
+    def stills_processed_image_format_uint(self):
+        if self.stills_processed_image_format in ["tiff", "tif"]:
+            return 0
+        elif self.stills_processed_image_format in ["jpeg", "jpg"]:
+            return 1
 
     @validator("stills_exp_us")
     def valid_stills_exp_us(cls, v):
@@ -133,21 +130,48 @@ class ScannerParamConfig(BaseModel):
             raise ValueError("stills_image_level must be <= 2")
         return v
     
+    @validator("stills_advanced_brightness")
+    def valid_stills_advanced_brightness(cls, v):
+        if v < 0:
+            raise ValueError("stills_advanced_brightness must be >= 0")
+        elif v > 1:
+            raise ValueError("stills_advanced_brightness must be <= 1")
+        return v
+
+    @validator("stills_advanced_contrast")
+    def valid_stills_advanced_contrast(cls, v):
+        if v < 0:
+            raise ValueError("stills_advanced_contrast must be >= 0")
+        elif v > 1:
+            raise ValueError("stills_advanced_contrast must be <= 1")
+        return v
+    
 
     def __str__(self):
         msg = ""
-        msg += "\n    stills_exp_us:" + str(self.stills_exp_us)
-        msg += "\n    laser_exp_us:" + str(self.laser_exp_us)
-        msg += "\n    laser_freq_hz:" + str(self.laser_freq_hz)
-        msg += "\n    stills_freq_hz:" + str(self.stills_freq_hz)
-        msg += "\n    save_laser_images:" + str(self.save_laser_images)
-        msg += "\n    laser_min_range_cm:" + str(self.laser_min_range_cm)
-        msg += "\n    laser_max_range_cm:" + str(self.laser_max_range_cm)
-        msg += "\n    index_of_refraction:" + str(self.index_of_refraction)
-        msg += "\n    led_panel_intensity_percentage:" + str(self.led_panel_intensity_percentage)
-        msg += "\n    laser_gain_percentage:" + str(self.laser_gain_percentage)
-        msg += "\n    stills_image_level:" + str(self.stills_image_level)
-        msg += "\n    laser_disable_range_gating:" + str(self.laser_disable_range_gating)
+        msg += "\n    stills_exp_us: " + str(self.stills_exp_us)
+        msg += "\n    laser_exp_us: " + str(self.laser_exp_us)
+        msg += "\n    laser_freq_hz: " + str(self.laser_freq_hz)
+        msg += "\n    stills_freq_hz: " + str(self.stills_freq_hz)
+        msg += "\n    save_laser_images: " + str(self.save_laser_images)
+        msg += "\n    laser_min_range_cm: " + str(self.laser_min_range_cm)
+        msg += "\n    laser_max_range_cm: " + str(self.laser_max_range_cm)
+        msg += "\n    index_of_refraction: " + str(self.index_of_refraction)
+        msg += "\n    led_panel_intensity_percentage: " + str(self.led_panel_intensity_percentage)
+        msg += "\n    laser_gain_percentage: " + str(self.laser_gain_percentage)
+        msg += "\n    stills_image_level: " + str(self.stills_image_level)
+        msg += "\n    stills_advanced_colour_mode: " + str(self.stills_advanced_colour_mode)
+        msg += "\n    stills_advanced_colour_enhancement_lvl: " + str(self.stills_advanced_colour_enhancement_lvl)
+        msg += "\n    stills_advanced_contrast_mode: " + str(self.stills_advanced_contrast_mode)
+        msg += "\n    stills_advanced_contrast_lvl: " + str(self.stills_advanced_contrast_lvl)
+        msg += "\n    stills_advanced_brightness: " + str(self.stills_advanced_brightness)
+        msg += "\n    stills_advanced_contrast: " + str(self.stills_advanced_contrast)
+        msg += "\n    stills_advanced_white_balance: " + str(self.stills_advanced_white_balance)
+        msg += "\n    stills_advanced_adaptive_lighting: " + str(self.stills_advanced_adaptive_lighting)
+        msg += "\n    stills_undistort: " + str(self.stills_undistort)
+        msg += "\n    stills_save_original: " + str(self.stills_save_original)
+        msg += "\n    stills_processed_image_format: " + str(self.stills_processed_image_format)
+        msg += "\n    laser_disable_range_gating: " + str(self.laser_disable_range_gating)
         return msg
 
 
@@ -193,8 +217,7 @@ class NetworkInput(BaseModel):
 
 
 class Configuration(BaseModel):
-    api_param_stills: ApiParamStillsConfig = ApiParamStillsConfig()
-    scanner_param: ScannerParamConfig = ScannerParamConfig()
+    parameters: ScannerParamConfig = ScannerParamConfig()
     endpoint_id: EndpointIdConfig = EndpointIdConfig()
     pps_input: NetworkInput = NetworkInput()
     navigation_input: NetworkInput = NetworkInput()
@@ -224,7 +247,6 @@ class Configuration(BaseModel):
         msg += "\n  navigation_input:" + str(self.navigation_input)
         msg += "\n  pps_input:" + str(self.pps_input)
         msg += "\n  log_path: " + self.log_path
-        msg += "\n  api_param_stills: " + str(self.api_param_stills)
-        msg += "\n  scanner_param: " + str(self.scanner_param)
+        msg += "\n  parameters: " + str(self.parameters)
         msg += "\n  endpoint_id: " + str(self.endpoint_id)
         return msg
