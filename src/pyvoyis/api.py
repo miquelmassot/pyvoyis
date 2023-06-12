@@ -8,6 +8,8 @@ See LICENSE.md file in the project root for full license information.
 import asyncio
 import logging
 import threading
+import os
+import datetime
 import time
 from pathlib import Path
 
@@ -25,7 +27,6 @@ from pyvoyis.api500.defs import (
     ENDPOINT_ID_SENSOR_STILLS_RAW,
     ENDPOINT_ID_STREAM,
     ENDPOINT_ID_XYZ_LASER,
-    NAVPROTO_PSONNAV,
     SCANNER_NOT_READY,
     SCANNER_CONNECTED_TO_THIS_API,
     SCANNER_PARAM_INDEX_OF_REFRACTION,
@@ -61,8 +62,6 @@ from pyvoyis.api500.defs import (
     SCANNER_STATUS_SENSOR_TEMP_STILLS_SENSOR,
     SCANNER_STATUS_STILLS_CAMERA_CONNECTED,
     SCANNER_STATUS_STILLS_CAMERA_READY,
-    SOURCE_TCP_CLIENT,
-    SOURCE_TCP_SERVER,
     VALUE_TYPE_BOOL,
     VALUE_TYPE_UINT,
     scanner_connection_to_str,
@@ -440,13 +439,18 @@ class VoyisAPI:
         success = self.send_message(self.cmd.disable_nas)
         success = self.send_message(self.cmd.disable_local_storage)
 
+        bp = self.config.endpoint_id.base_path
+        current_date = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        mp = current_date + "_" + self.config.endpoint_id.mission_postfix
+        default_path = os.path.join(bp, mp)
+
         self.cmd.set_endpoints.payload = [
             {
                 "endpoint_id": ENDPOINT_ID_LOG,
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoint_id.log,
+                "file_name": os.path.join(default_path, self.config.endpoint_id.log),
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -454,7 +458,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoint_id.stream,
+                "file_name": os.path.join(default_path, self.config.endpoint_id.stream),
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -462,7 +466,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoint_id.xyz_laser,
+                "file_name": os.path.join(default_path, self.config.endpoint_id.xyz_laser),
                 "file_max_bytes": 1024 * 1024 * 1024,
             },
             {
@@ -470,7 +474,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoint_id.sensor_laser,
+                "file_name": os.path.join(default_path, self.config.endpoint_id.sensor_laser),
                 "file_max_bytes": 0,
             },
             {
@@ -478,7 +482,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoint_id.sensor_stills_raw,
+                "file_name": os.path.join(default_path, self.config.endpoint_id.sensor_stills_raw),
                 "file_max_bytes": 0,
             },
             {
@@ -486,7 +490,7 @@ class VoyisAPI:
                 "net_enabled": False,
                 "net_connection": "",
                 "file_enabled": True,
-                "file_name": self.config.endpoint_id.sensor_stills_processed,
+                "file_name": os.path.join(default_path, self.config.endpoint_id.sensor_stills_processed),
                 "file_max_bytes": 0,
             },
         ]
@@ -804,11 +808,10 @@ class VoyisAPI:
         if not success:
             return False
         
-        """
+
         success = self.send_message(self.cmd.query_api_configuration)
         if not success:
             return False
-
         cfg = self.config.api_param_stills
         self.cmd.set_api_configuration.payload = [
             {
@@ -818,23 +821,22 @@ class VoyisAPI:
             },
             {
                 "parameter_id": API_PARAM_STILLS_IMAGE_SAVE_ORIGINAL,
-                "value": bool2str(cfg.save_original, "1", "0"),
+                "value": bool2str(cfg.save_original, "true", "false"),
                 "type": VALUE_TYPE_BOOL,
             },
             {
                 "parameter_id": API_PARAM_STILLS_PROCESSED_IMAGE_FORMAT,
-                "value": cfg.processed_image_format_uint,
+                "value": bool2str(cfg.processed_image_format_uint, "1", "0"),
                 "type": VALUE_TYPE_UINT,
             },
         ]
-        success =  self.send_message(self.cmd.set_api_configuration, expect_ack=False)
+        success =  self.send_message(self.cmd.set_api_configuration)
         if not success:
             return False
     
         success = self.send_message(self.cmd.query_api_configuration)
         if not success:
             return False
-        """
         
         return True
 
@@ -948,10 +950,7 @@ class VoyisAPI:
                     internal_temp_stills_sensor.value.get()
                 )
             )
-        if internal_temp_ch is not None:
-            return int(internal_temp_ch.value.get()) < 60
-        else:
-            return True
+        return True
 
     def start_scanning(self):
         """Sends the command to start scanning

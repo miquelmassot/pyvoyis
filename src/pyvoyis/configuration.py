@@ -152,15 +152,19 @@ class ScannerParamConfig(BaseModel):
 
 
 class EndpointIdConfig(BaseModel):
-    log: str = "/data/data/default/log/"
-    stream: str = "/data/data/default/stream/"
-    xyz_laser: str = "/data/data/default/laser/xyz/"
-    sensor_laser: str = "/data/data/default/laser/raw/"
-    sensor_stills_raw: str = "/data/data/default/stills/raw/"
-    sensor_stills_processed: str = "/data/data/default/stills/processed/"
+    base_path: str = "/data/data"
+    mission_postfix: str = "default"
+    log: str = "log/"
+    stream: str = "stream/"
+    xyz_laser: str = "laser/xyz/"
+    sensor_laser: str = "laser/raw/"
+    sensor_stills_raw: str = "stills/raw/"
+    sensor_stills_processed: str = "stills/processed/"
 
     def __str__(self):
-        msg = "\n    log: " + self.log
+        msg = "\n    base_path: " + self.base_path
+        msg += "\n    mission_postfix: " + self.mission_postfix
+        msg += "\n    log: " + self.log
         msg += "\n    stream: " + self.stream
         msg += "\n    xyz_laser: " + self.xyz_laser
         msg += "\n    sensor_laser: " + self.sensor_laser

@@ -38,7 +38,7 @@ class API500ClientProtocol(asyncio.Protocol):
         while True:
             message = await self.queue.get()
             self.transport.write(message.encode("utf-8"))
-            self.log.warn("Message sent: \n{}".format(message))
+            self.log.debug("Message sent: \n{}".format(message))
             await asyncio.sleep(0.1)
 
     def connection_made(self, transport):
@@ -110,7 +110,7 @@ class API500ClientProtocol(asyncio.Protocol):
         # Process each object
         for idx, obj in enumerate(objects):
             try:
-                self.log.warn(
+                self.log.debug(
                     "Received split object {}: {}".format(idx, json.dumps(json.loads(obj))))
                 asyncio.ensure_future(self.process_data(obj))
             except json.decoder.JSONDecodeError as e:

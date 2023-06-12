@@ -1,6 +1,6 @@
 ip_address: 192.168.10.26
 port: 4875
-log_path: logs
+log_path: /home/user/.pyvoyis/logs
 
 api_param_stills:
   undistort: true
@@ -52,9 +52,11 @@ scanner_param:
   index_of_refraction: 1.35
 
 endpoint_id:
-  log: /data/data/smarty200/log
-  stream: /data/data/smarty200/internal/raw
-  xyz_laser: /data/data/smarty200/pointcloud/xyz
-  sensor_laser: /data/data/smarty200/laser/laser
-  sensor_stills_raw: /data/data/smarty200/stills_raw/stills_raw
-  sensor_stills_processed: /data/data/smarty200/stills_processed/stills_processed
+  base_path: /data/data
+  mission_postfix: smarty200
+  log: log/log
+  stream: internal/raw
+  xyz_laser: pointcloud/pointcloud
+  sensor_laser: laser/laser
+  sensor_stills_raw: stills/raw/raw
+  sensor_stills_processed: stills/processed/processed
