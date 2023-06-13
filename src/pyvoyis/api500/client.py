@@ -6,10 +6,10 @@ See LICENSE.md file in the project root for full license information.
 """
 
 import asyncio
+import copy
 import json
 import logging
 import sys
-import copy
 
 if sys.version_info[:2] >= (3, 7):
     pass
@@ -96,7 +96,7 @@ class API500ClientProtocol(asyncio.Protocol):
             self.log.debug("Adding chunk to message")
             self.data += chunk
             return
-        
+
         # Split data into JSON strings if "}{" is found
         objects = whole_data.split("}{")
 
@@ -111,9 +111,12 @@ class API500ClientProtocol(asyncio.Protocol):
         for idx, obj in enumerate(objects):
             try:
                 self.log.debug(
-                    "Received split object {}: {}".format(idx, json.dumps(json.loads(obj))))
+                    "Received split object {}: {}".format(
+                        idx, json.dumps(json.loads(obj))
+                    )
+                )
                 asyncio.ensure_future(self.process_data(obj))
-            except json.decoder.JSONDecodeError as e:
+            except json.decoder.JSONDecodeError:
                 self.log.warn("Could not decode: {}".format(obj))
 
     def connection_lost(self, error):

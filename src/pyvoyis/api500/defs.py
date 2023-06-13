@@ -346,7 +346,7 @@ def api_param_stills_to_str(value):
     elif value == API_PARAM_STILLS_ADVANCED_WHITE_BALANCE:
         return "API_PARAM_STILLS_ADVANCED_WHITE_BALANCE"
     elif value == API_PARAM_STILLS_ADVANCED_ADAPTIVE_LIGHTING:
-        return "API_PARAM_STILLS_ADVANCED_ADAPTIVE_LIGHTING" 
+        return "API_PARAM_STILLS_ADVANCED_ADAPTIVE_LIGHTING"
     elif value == API_PARAM_DUMMY_0:
         return "API_PARAM_DUMMY_0"
     elif value == API_PARAM_DUMMY_1:
@@ -1210,7 +1210,8 @@ SOURCE_TCP_CLIENT = 2
 SOURCE_TCP_SERVER = 3
 SOURCE_MULTICAST = 4
 
-def str_to_network_source(value:str):
+
+def str_to_network_source(value: str):
     if value.lower() == "com":
         return SOURCE_COM
     elif value.lower() == "udp":
@@ -1258,7 +1259,7 @@ NAVPROTO_PHINSSTD = 80  # PHINS Std format supports range
 NAVPROTO_PSONNAV = 1  # Sonardyne PSONNAV format
 
 
-def str_to_navproto(value:str):
+def str_to_navproto(value: str):
     if value.lower() == "raw":
         return NAVPROTO_RAW
     if value.lower() == "lnav":

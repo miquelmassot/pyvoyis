@@ -12,7 +12,6 @@ import argparse
 from pyvoyis import Configuration, VoyisAPI
 
 
-
 def main():
     parser = argparse.ArgumentParser(
         description="Run a TCP client to send messages to Voyis API"
@@ -30,7 +29,6 @@ def main():
     if args.log_path:
         config.log_path = args.log_path
 
-    
     print("Starting Voyis API client")
 
     if args.ip:
