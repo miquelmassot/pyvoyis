@@ -1169,3 +1169,9 @@ class VoyisAPI:
         elif message == "AckRsp":
             msg_class = AckRsp(data)
             self.ack_rsp_list.append(msg_class)
+
+    def sync_time_manually(self):
+        self.cmd.sync_time_manually.payload = {
+            "microseconds_since_epoch": int(time.time()*1e6)
+        }
+        return self.send_message(self.cmd.sync_time_manually)
