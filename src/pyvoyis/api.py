@@ -1052,136 +1052,193 @@ class VoyisAPI:
 
         message = data["message"]
         if message == "ApiVersionNot":
-            msg_class = ApiVersionNot(data)
-            self.api_version_not_list.append(msg_class)
+            try:
+                msg_class = ApiVersionNot(data)
+                self.api_version_not_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "APIStatus":
-            msg_class = APIStatus(data)
-            self.api_status_list.append(msg_class)
+            try:
+                msg_class = APIStatus(data)
+                self.api_status_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "APIStatusNot":
-            msg_class = APIStatusNot(data)
-            for asn in msg_class.statuses:
-                if asn.status_id in self.api_status_not_dict:
-                    self.api_status_not_dict[asn.status_id].update(asn)
-                else:
-                    self.api_status_not_dict[asn.status_id] = asn
-            # Save dict as json
-            api_status_not_file = logging_file.parent / (
-                date_str + "_api_status_not.yaml"
-            )
-            if api_status_not_file.exists():
-                # delete the file
-                api_status_not_file.unlink()
-            with api_status_not_file.open("a", encoding="utf-8") as f:
-                for key in self.api_status_not_dict:
-                    val = self.api_status_not_dict[key]
-                    f.write(val.to_yaml())
+            try:
+                msg_class = APIStatusNot(data)
+                for asn in msg_class.statuses:
+                    if asn.status_id in self.api_status_not_dict:
+                        self.api_status_not_dict[asn.status_id].update(asn)
+                    else:
+                        self.api_status_not_dict[asn.status_id] = asn
+                # Save dict as json
+                api_status_not_file = logging_file.parent / (
+                    date_str + "_api_status_not.yaml"
+                )
+                if api_status_not_file.exists():
+                    # delete the file
+                    api_status_not_file.unlink()
+                with api_status_not_file.open("a", encoding="utf-8") as f:
+                    for key in self.api_status_not_dict:
+                        val = self.api_status_not_dict[key]
+                        f.write(val.to_yaml())
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "ScannerListNot":
-            msg_class = ScannerListNot(data)
-            for idx in range(msg_class.size()):
-                self.scanner_list_not_dict[
-                    msg_class.ip_addresses[idx]
-                ] = msg_class.connection_states[idx]
-            self.last_connection_state = int(
-                safe_get(self.scanner_list_not_dict, self.ip)
-            )
+            try:
+                msg_class = ScannerListNot(data)
+                for idx in range(msg_class.size()):
+                    self.scanner_list_not_dict[
+                        msg_class.ip_addresses[idx]
+                    ] = msg_class.connection_states[idx]
+                self.last_connection_state = int(
+                    safe_get(self.scanner_list_not_dict, self.ip)
+                )
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "ConnectionChangeNot":
-            msg_class = ConnectionChangeNot(data)
-            self.connection_change_not_list.append(msg_class)
+            try:
+                msg_class = ConnectionChangeNot(data)
+                self.connection_change_not_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "ScannerStatus":
-            msg_class = ScannerStatus(data)
-            self.scanner_status_list.append(msg_class)
+            try:
+                msg_class = ScannerStatus(data)
+                self.scanner_status_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "ScannerStatusNot":
-            msg_class = ScannerStatusNot(data)
-            for ssnot in msg_class.statuses:
-                if ssnot.status_id in self.scanner_status_not_dict:
-                    self.scanner_status_not_dict[ssnot.status_id].update(ssnot)
-                else:
-                    self.scanner_status_not_dict[ssnot.status_id] = ssnot
-            # Save dict as json
-            scanner_status_not_file = logging_file.parent / (
-                date_str + "_scanner_status_not.yaml"
-            )
-            if scanner_status_not_file.exists():
-                # delete the file
-                scanner_status_not_file.unlink()
-            with scanner_status_not_file.open("a", encoding="utf-8") as f:
-                for key in self.scanner_status_not_dict:
-                    val = self.scanner_status_not_dict[key]
-                    f.write(val.to_yaml())
+            try:
+                msg_class = ScannerStatusNot(data)
+                for ssnot in msg_class.statuses:
+                    if ssnot.status_id in self.scanner_status_not_dict:
+                        self.scanner_status_not_dict[ssnot.status_id].update(ssnot)
+                    else:
+                        self.scanner_status_not_dict[ssnot.status_id] = ssnot
+                # Save dict as json
+                scanner_status_not_file = logging_file.parent / (
+                    date_str + "_scanner_status_not.yaml"
+                )
+                if scanner_status_not_file.exists():
+                    # delete the file
+                    scanner_status_not_file.unlink()
+                with scanner_status_not_file.open("a", encoding="utf-8") as f:
+                    for key in self.scanner_status_not_dict:
+                        val = self.scanner_status_not_dict[key]
+                        f.write(val.to_yaml())
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "LeakDetectionNot":
-            msg_class = LeakDetectionNot(data)
-            self.leak_detection_not_list.append(msg_class)
+            try:
+                msg_class = LeakDetectionNot(data)
+                self.leak_detection_not_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "ScannerParameter":
-            msg_class = ScannerParameter(data)
-            self.scanner_parameter_list.append(msg_class)
+            try:
+                msg_class = ScannerParameter(data)
+                self.scanner_parameter_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "ScannerParametersNot":
-            msg_class = ScannerParametersNot(data)
-            for spnot in msg_class.parameters:
-                if spnot.parameter_id in self.scanner_parameters_not_dict:
-                    self.scanner_parameters_not_dict[spnot.parameter_id].update(spnot)
-                else:
-                    self.scanner_parameters_not_dict[spnot.parameter_id] = spnot
-            # Save dict as json
-            scanner_parameters_not_file = logging_file.parent / (
-                date_str + "_scanner_parameters_not.yaml"
-            )
-            if scanner_parameters_not_file.exists():
-                # delete the file
-                scanner_parameters_not_file.unlink()
-            with scanner_parameters_not_file.open("a", encoding="utf-8") as f:
-                for key in self.scanner_parameters_not_dict:
-                    val = self.scanner_parameters_not_dict[key]
-                    f.write(val.to_yaml())
-
+            try:
+                msg_class = ScannerParametersNot(data)
+                for spnot in msg_class.parameters:
+                    if spnot.parameter_id in self.scanner_parameters_not_dict:
+                        self.scanner_parameters_not_dict[spnot.parameter_id].update(
+                            spnot
+                        )
+                    else:
+                        self.scanner_parameters_not_dict[spnot.parameter_id] = spnot
+                # Save dict as json
+                scanner_parameters_not_file = logging_file.parent / (
+                    date_str + "_scanner_parameters_not.yaml"
+                )
+                if scanner_parameters_not_file.exists():
+                    # delete the file
+                    scanner_parameters_not_file.unlink()
+                with scanner_parameters_not_file.open("a", encoding="utf-8") as f:
+                    for key in self.scanner_parameters_not_dict:
+                        val = self.scanner_parameters_not_dict[key]
+                        f.write(val.to_yaml())
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "APIConfiguration":
-            msg_class = APIConfiguration(data)
-            self.api_configuration_list.append(msg_class)
+            try:
+                msg_class = APIConfiguration(data)
+                self.api_configuration_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "APIConfigurationNot":
-            msg_class = APIConfigurationNot(data)
-            for acnot in msg_class.api_configurations:
-                self.api_configuration_not_dict[acnot.parameter_id] = acnot
-            # Save dict as json
-            logging_file = Path(logging.getLoggerClass().root.handlers[0].baseFilename)
-            api_configuration_not_file = logging_file.parent / (
-                date_str + "_api_configuration_not.yaml"
-            )
-            if api_configuration_not_file.exists():
-                # delete the file
-                api_configuration_not_file.unlink()
-            with api_configuration_not_file.open("a", encoding="utf-8") as f:
-                for key in self.api_configuration_not_dict:
-                    val = self.api_configuration_not_dict[key]
-                    f.write(val.to_yaml())
+            try:
+                msg_class = APIConfigurationNot(data)
+                for acnot in msg_class.api_configurations:
+                    self.api_configuration_not_dict[acnot.parameter_id] = acnot
+                # Save dict as json
+                logging_file = Path(
+                    logging.getLoggerClass().root.handlers[0].baseFilename
+                )
+                api_configuration_not_file = logging_file.parent / (
+                    date_str + "_api_configuration_not.yaml"
+                )
+                if api_configuration_not_file.exists():
+                    # delete the file
+                    api_configuration_not_file.unlink()
+                with api_configuration_not_file.open("a", encoding="utf-8") as f:
+                    for key in self.api_configuration_not_dict:
+                        val = self.api_configuration_not_dict[key]
+                        f.write(val.to_yaml())
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "EndpointConfiguration":
-            msg_class = EndpointConfiguration(data)
-            self.endpoint_configuration_list.append(msg_class)
+            try:
+                msg_class = EndpointConfiguration(data)
+                self.endpoint_configuration_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "EndpointConfigurationNot":
-            msg_class = EndpointConfigurationNot(data)
-            for ecnot in msg_class.endpoint_configurations:
-                self.endpoint_configuration_not_dict[ecnot.endpoint_id] = ecnot
-            # Save dict as json
-            endpoint_configuration_not_file = logging_file.parent / (
-                date_str + "_endpoint_configuration_not.yaml"
-            )
-            if endpoint_configuration_not_file.exists():
-                # delete the file
-                endpoint_configuration_not_file.unlink()
-            with endpoint_configuration_not_file.open("a", encoding="utf-8") as f:
-                for key in self.endpoint_configuration_not_dict:
-                    val = self.endpoint_configuration_not_dict[key]
-                    f.write(val.to_yaml())
+            try:
+                msg_class = EndpointConfigurationNot(data)
+                for ecnot in msg_class.endpoint_configurations:
+                    self.endpoint_configuration_not_dict[ecnot.endpoint_id] = ecnot
+                # Save dict as json
+                endpoint_configuration_not_file = logging_file.parent / (
+                    date_str + "_endpoint_configuration_not.yaml"
+                )
+                if endpoint_configuration_not_file.exists():
+                    # delete the file
+                    endpoint_configuration_not_file.unlink()
+                with endpoint_configuration_not_file.open("a", encoding="utf-8") as f:
+                    for key in self.endpoint_configuration_not_dict:
+                        val = self.endpoint_configuration_not_dict[key]
+                        f.write(val.to_yaml())
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "CorrectionModelLoadNot":
-            msg_class = CorrectionModelLoadNot(data)
-            self.correction_model_load_not_list.append(msg_class)
+            try:
+                msg_class = CorrectionModelLoadNot(data)
+                self.correction_model_load_not_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "CorrectionModelListNot":
-            msg_class = CorrectionModelListNot(data)
-            self.correction_model_list_not_list.append(msg_class)
+            try:
+                msg_class = CorrectionModelListNot(data)
+                self.correction_model_list_not_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "PendingCmdStatusNot":
-            msg_class = PendingCmdStatusNot(data)
-            self.pending_cmd_status_not_list.append(msg_class)
+            try:
+                msg_class = PendingCmdStatusNot(data)
+                self.pending_cmd_status_not_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
         elif message == "AckRsp":
-            msg_class = AckRsp(data)
-            self.ack_rsp_list.append(msg_class)
+            try:
+                msg_class = AckRsp(data)
+                self.ack_rsp_list.append(msg_class)
+            except Exception as e:
+                self.log.warn("Could not parse ScannerStatus: {}".format(e))
 
     def sync_time_manually(self):
         self.cmd.sync_time_manually.payload = {

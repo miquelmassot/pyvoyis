@@ -17,6 +17,12 @@ from pyvoyis.api500.defs import (
 )
 
 
+def check_keys(json_dict, check_keys):
+    for k in check_keys:
+        if k not in json_dict:
+            raise ValueError("Key {} not in json_dict".format(k))
+
+
 class ValueHistory:
     def __init__(self, value=None):
         """Class to record a history of values and times."""
@@ -68,6 +74,8 @@ class API500Message:
           ]
         }
         """
+        keys_to_check = ["message", "payload"]
+        check_keys(data, keys_to_check)
         self.message = ""
         self.payload = None
 
@@ -112,6 +120,8 @@ class ApiVersionNot(API500Message):
 
 class APIStatus:
     def __init__(self, json_dict):
+        keys_to_check = ["status_id", "name", "value_type", "value"]
+        check_keys(json_dict, keys_to_check)
         self.status_id = json_dict["status_id"]
         self.name = json_dict["name"]
         self.value_type = json_dict["value_type"]
@@ -177,6 +187,17 @@ class ConnectionChangeNot(API500Message):
 
 class ScannerStatus:
     def __init__(self, json_dict):
+        keys_to_check = [
+            "status_id",
+            "name",
+            "value_type",
+            "value",
+            "status_status",
+            "category_id",
+            "category_name",
+        ]
+        check_keys(json_dict, keys_to_check)
+
         self.status_id = json_dict["status_id"]
         self.name = json_dict["name"]
         self.value_type = json_dict["value_type"]
@@ -242,6 +263,21 @@ class LeakDetectionNot(API500Message):
 
 class ScannerParameter:
     def __init__(self, json_dict):
+        keys_to_check = [
+            "parameter_id",
+            "name",
+            "value_type",
+            "remote_value",
+            "local_value",
+            "valid_min",
+            "valid_max",
+            "valid_step",
+            "category_id",
+            "category_name",
+            "can_set_when_scanning",
+        ]
+        check_keys(json_dict, keys_to_check)
+
         self.parameter_id = json_dict["parameter_id"]
         self.name = json_dict["name"]
         self.value_type = json_dict["value_type"]
@@ -303,6 +339,17 @@ class ScannerParametersNot(API500Message):
 
 class APIConfiguration:
     def __init__(self, json_dict):
+        keys_to_check = [
+            "parameter_id",
+            "name",
+            "value_type",
+            "value",
+            "valid_min",
+            "valid_max",
+            "valid_step",
+        ]
+        check_keys(json_dict, keys_to_check)
+
         self.parameter_id = json_dict["parameter_id"]
         self.name = json_dict["name"]
         self.value_type = json_dict["value_type"]
@@ -351,6 +398,16 @@ class APIConfigurationNot(API500Message):
 
 class EndpointConfiguration:
     def __init__(self, json_dict):
+        keys_to_check = [
+            "endpoint_id",
+            "net_enabled",
+            "net_connection",
+            "file_enabled",
+            "file_name",
+            "file_max_bytes",
+        ]
+        check_keys(json_dict, keys_to_check)
+
         self.endpoint_id = json_dict["endpoint_id"]
         self.net_enabled = json_dict["net_enabled"]
         self.net_connection = json_dict["net_connection"]
@@ -394,6 +451,9 @@ class EndpointConfigurationNot(API500Message):
 class CorrectionModelLoadNot(API500Message):
     def __init__(self, data=None):
         super().__init__(data)
+        keys_to_check = ["accepted", "model_name", "error"]
+        check_keys(data, keys_to_check)
+
         self.accepted = self.payload["accepted"]
         self.model_name = self.payload["model_name"]
         self.error = self.payload["error"]
@@ -409,6 +469,9 @@ class CorrectionModelLoadNot(API500Message):
 class CorrectionModelListNot(API500Message):
     def __init__(self, data=None):
         super().__init__(data)
+        keys_to_check = ["model_limit", "current_model", "model_list"]
+        check_keys(data, keys_to_check)
+
         self.model_limit = self.payload["model_limit"]
         self.current_model = self.payload["current_model"]
         self.model_list = self.payload["model_list"]
@@ -424,6 +487,9 @@ class CorrectionModelListNot(API500Message):
 class PendingCmdStatusNot(API500Message):
     def __init__(self, data=None):
         super().__init__(data)
+        keys_to_check = ["completeness", "time_remaining", "command_id"]
+        check_keys(data, keys_to_check)
+
         self.completeness = self.payload["completeness"]
         self.time_remaining = self.payload["time_remaining"]
         self.command_id = self.payload["command_id"]
@@ -439,6 +505,15 @@ class PendingCmdStatusNot(API500Message):
 class AckRsp(API500Message):
     def __init__(self, data=None):
         super().__init__(data)
+        keys_to_check = [
+            "accepted",
+            "command_id",
+            "nack_error_code",
+            "nack_error_string",
+            "api_version",
+        ]
+        check_keys(data, keys_to_check)
+
         self.accepted = self.payload["accepted"]
         self.command_id = self.payload["command_id"]
         self.nack_error_code = self.payload["nack_error_code"]
