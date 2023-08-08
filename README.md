@@ -1,4 +1,4 @@
-# PyVoyis
+# pyVOYIS
 Python library for controlling the Voyis Recon LS camera, strobes and laser system.
 
 ## Installation

@@ -68,6 +68,8 @@ parameters:
   index_of_refraction: 1.35
 
 endpoint_id:
+  # Local storage disabled by default
+  # NAS storage disabled by default
   base_path: /data/data
   mission_postfix: smarty200
   log: log/log

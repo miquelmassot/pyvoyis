@@ -6,10 +6,10 @@ See LICENSE.md file in the project root for full license information.
 """
 
 from pathlib import Path
+from typing import Optional
 
 import yaml
 from pydantic import BaseModel, validator
-from typing import Optional
 
 
 class ScannerParamConfig(BaseModel):
@@ -42,7 +42,7 @@ class ScannerParamConfig(BaseModel):
         if v not in ["jpg", "tiff", "tif", "jpeg"]:
             raise ValueError('stills_processed_image_format must be "jpg" or "tiff"')
         return v
-    
+
     @property
     def stills_processed_image_format_uint(self):
         if self.stills_processed_image_format in ["tiff", "tif"]:
@@ -129,7 +129,7 @@ class ScannerParamConfig(BaseModel):
         elif v > 2:
             raise ValueError("stills_image_level must be <= 2")
         return v
-    
+
     @validator("stills_advanced_brightness")
     def valid_stills_advanced_brightness(cls, v):
         if v < 0:
@@ -145,7 +145,6 @@ class ScannerParamConfig(BaseModel):
         elif v > 1:
             raise ValueError("stills_advanced_contrast must be <= 1")
         return v
-    
 
     def __str__(self):
         msg = ""
@@ -157,21 +156,41 @@ class ScannerParamConfig(BaseModel):
         msg += "\n    laser_min_range_cm: " + str(self.laser_min_range_cm)
         msg += "\n    laser_max_range_cm: " + str(self.laser_max_range_cm)
         msg += "\n    index_of_refraction: " + str(self.index_of_refraction)
-        msg += "\n    led_panel_intensity_percentage: " + str(self.led_panel_intensity_percentage)
+        msg += "\n    led_panel_intensity_percentage: " + str(
+            self.led_panel_intensity_percentage
+        )
         msg += "\n    laser_gain_percentage: " + str(self.laser_gain_percentage)
         msg += "\n    stills_image_level: " + str(self.stills_image_level)
-        msg += "\n    stills_advanced_colour_mode: " + str(self.stills_advanced_colour_mode)
-        msg += "\n    stills_advanced_colour_enhancement_lvl: " + str(self.stills_advanced_colour_enhancement_lvl)
-        msg += "\n    stills_advanced_contrast_mode: " + str(self.stills_advanced_contrast_mode)
-        msg += "\n    stills_advanced_contrast_lvl: " + str(self.stills_advanced_contrast_lvl)
-        msg += "\n    stills_advanced_brightness: " + str(self.stills_advanced_brightness)
+        msg += "\n    stills_advanced_colour_mode: " + str(
+            self.stills_advanced_colour_mode
+        )
+        msg += "\n    stills_advanced_colour_enhancement_lvl: " + str(
+            self.stills_advanced_colour_enhancement_lvl
+        )
+        msg += "\n    stills_advanced_contrast_mode: " + str(
+            self.stills_advanced_contrast_mode
+        )
+        msg += "\n    stills_advanced_contrast_lvl: " + str(
+            self.stills_advanced_contrast_lvl
+        )
+        msg += "\n    stills_advanced_brightness: " + str(
+            self.stills_advanced_brightness
+        )
         msg += "\n    stills_advanced_contrast: " + str(self.stills_advanced_contrast)
-        msg += "\n    stills_advanced_white_balance: " + str(self.stills_advanced_white_balance)
-        msg += "\n    stills_advanced_adaptive_lighting: " + str(self.stills_advanced_adaptive_lighting)
+        msg += "\n    stills_advanced_white_balance: " + str(
+            self.stills_advanced_white_balance
+        )
+        msg += "\n    stills_advanced_adaptive_lighting: " + str(
+            self.stills_advanced_adaptive_lighting
+        )
         msg += "\n    stills_undistort: " + str(self.stills_undistort)
         msg += "\n    stills_save_original: " + str(self.stills_save_original)
-        msg += "\n    stills_processed_image_format: " + str(self.stills_processed_image_format)
-        msg += "\n    laser_disable_range_gating: " + str(self.laser_disable_range_gating)
+        msg += "\n    stills_processed_image_format: " + str(
+            self.stills_processed_image_format
+        )
+        msg += "\n    laser_disable_range_gating: " + str(
+            self.laser_disable_range_gating
+        )
         return msg
 
 
@@ -198,14 +217,17 @@ class EndpointIdConfig(BaseModel):
 
 
 class NetworkInput(BaseModel):
-    ip_address:str = ""
-    mode:str = ""
-    driver:Optional[str] = None
+    ip_address: str = ""
+    mode: str = ""
+    driver: Optional[str] = None
 
     @validator("mode")
     def mode_is_valid(cls, v):
         if v.lower() not in ["tcp_client", "tcp_server", "udp", "com", "multicast"]:
-            raise ValueError('Mode needs to be TCP_CLIENT, TCP_SERVER, UDP, MULTICAST or COM in upper or lowercase characters.')
+            raise ValueError(
+                "Mode needs to be TCP_CLIENT, TCP_SERVER, UDP, MULTICAST or COM in",
+                "upper or lowercase characters.",
+            )
         return v
 
     def __str__(self):

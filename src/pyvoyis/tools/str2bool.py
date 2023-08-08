@@ -1,2 +1,2 @@
 def str2bool(v):
-  return v.lower() in ("true", "1")
+    return v.lower() in ("true", "1")
