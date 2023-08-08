@@ -1,0 +1,80 @@
+ip_address: 192.168.10.26
+port: 4875
+log_path: /home/user/.pyvoyis
+
+pps_input:
+  ip_address: 192.168.10.26:4010
+  mode: tcp_server
+
+navigation_input:
+  ip_address: 192.168.10.10:4003
+  mode: tcp_client
+  driver: psonnav
+
+range_input:
+  ip_address: 192.168.10.10:4004
+  mode: tcp_client
+  driver: lnav
+
+parameters:
+  # Stills camera
+  stills_freq_hz: 1.0
+  stills_exp_us: 4000
+
+  # Undistort images
+  stills_undistort: true
+  # Save RAW TIFF images
+  stills_save_original: true
+  # tiff (uncompressed) or jpg (compressed)
+  stills_processed_image_format: jpg
+
+  # Image levelling
+  # * 0 - Disable leveling
+  # * 1 - Enable Algorithmic leveling
+  # * 2 - Enable Realistic leveling
+  # * 3 - Enable Advanced leveling (needs correction model)
+  stills_image_level: 2
+  # 0 - True Colour, 1 - Enhanced Colour
+  stills_advanced_colour_mode: 1
+  # 1 - LOW, 2 - MED, 3 - HIGH
+  stills_advanced_colour_enhancement_lvl: 1
+  # 0 - Standard, 1 - Colour
+  stills_advanced_contrast_mode: 0
+  # 0 - OFF, 1 - LOW, 2 - MED, 3 - HIGH
+  stills_advanced_contrast_lvl: 1
+  # Brightness and contrast ratios
+  stills_advanced_brightness: 0.35
+  stills_advanced_contrast: 0.15
+  # 0 - disable, 1 - enable
+  stills_advanced_white_balance: 0
+  #  0 - disable, 1 - enable
+  stills_advanced_adaptive_lighting: 0
+
+  # Laser camera
+  laser_freq_hz: 1.0
+  laser_exp_us: 4000
+  save_laser_images: true
+  laser_gain_percentage: 0
+
+  # Range gating
+  laser_disable_range_gating: true
+  laser_min_range_cm: 100
+  laser_max_range_cm: 1000
+
+  # LED panel
+  led_panel_intensity_percentage: 0
+
+  # Refraction
+  index_of_refraction: 1.35
+
+endpoint_id:
+  # Local storage disabled by default
+  # NAS storage disabled by default
+  base_path: /data/data
+  mission_postfix: smarty200
+  log: log/log
+  stream: internal/raw
+  xyz_laser: pointcloud/pointcloud
+  sensor_laser: laser/laser
+  sensor_stills_raw: stills/raw/raw
+  sensor_stills_processed: stills/processed/processed
