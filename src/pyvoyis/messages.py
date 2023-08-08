@@ -18,6 +18,8 @@ from pyvoyis.api500.defs import (
 
 
 def check_keys(json_dict, check_keys):
+    if json_dict is None:
+        raise ValueError("JSON dict is None and should contain", check_keys)
     for k in check_keys:
         if k not in json_dict:
             raise ValueError("Key {} not in json_dict".format(k))
@@ -75,7 +77,8 @@ class API500Message:
         }
         """
         keys_to_check = ["message", "payload"]
-        check_keys(data, keys_to_check)
+        if data is not None:
+            check_keys(data, keys_to_check)
         self.message = ""
         self.payload = None
 
@@ -452,7 +455,7 @@ class CorrectionModelLoadNot(API500Message):
     def __init__(self, data=None):
         super().__init__(data)
         keys_to_check = ["accepted", "model_name", "error"]
-        check_keys(data, keys_to_check)
+        check_keys(self.payload, keys_to_check)
 
         self.accepted = self.payload["accepted"]
         self.model_name = self.payload["model_name"]
@@ -470,7 +473,7 @@ class CorrectionModelListNot(API500Message):
     def __init__(self, data=None):
         super().__init__(data)
         keys_to_check = ["model_limit", "current_model", "model_list"]
-        check_keys(data, keys_to_check)
+        check_keys(self.payload, keys_to_check)
 
         self.model_limit = self.payload["model_limit"]
         self.current_model = self.payload["current_model"]
@@ -488,7 +491,7 @@ class PendingCmdStatusNot(API500Message):
     def __init__(self, data=None):
         super().__init__(data)
         keys_to_check = ["completeness", "time_remaining", "command_id"]
-        check_keys(data, keys_to_check)
+        check_keys(self.payload, keys_to_check)
 
         self.completeness = self.payload["completeness"]
         self.time_remaining = self.payload["time_remaining"]
@@ -512,7 +515,7 @@ class AckRsp(API500Message):
             "nack_error_string",
             "api_version",
         ]
-        check_keys(data, keys_to_check)
+        check_keys(self.payload, keys_to_check)
 
         self.accepted = self.payload["accepted"]
         self.command_id = self.payload["command_id"]

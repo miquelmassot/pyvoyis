@@ -281,15 +281,15 @@ class VoyisAPI:
             success = self.configure_time_source()
             if not success:
                 self.log.error(
-                    "Could not configure time source.",
-                    "Check that the IP address provided for time sync is accessible",
-                    "from the Voyis API PC network.",
+                    "Could not configure time source."\
+                    "Check that the IP address provided for time sync is accessible"\
+                    "from the Voyis API PC network."
                 )
                 return
             success = self.configure_nav()
             if not success:
                 self.log.error(
-                    "Could not configure nav. Check that the IP address provided for",
+                    "Could not configure nav. Check that the IP address provided for"\
                     "nav updates is accessible from the Voyis PC network.",
                 )
                 return
