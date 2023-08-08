@@ -44,11 +44,14 @@ from pyvoyis.api500.defs import (
     SCANNER_PARAM_LASER_MAX_RANGE,
     SCANNER_PARAM_LASER_MIN_RANGE,
     SCANNER_PARAM_LASER_OUTPUT_GAIN,
+    SCANNER_PARAM_LASER_DISABLE_RANGE_GATING,
     SCANNER_PARAM_LED_PANEL_INTENSITY,
     SCANNER_PARAM_MEMS_OUTPUT_ENABLE,
     SCANNER_PARAM_OUTPUT_LASER_DATA,
     SCANNER_PARAM_PROFILE_STILLS_EXP,
     SCANNER_PARAM_STILL_FREQ,
+    SCANNER_PARAM_STILLS_IMAGE_LEVEL,
+    SCANNER_PARAM_STILLS_IMAGE_UNDISTORT,
     SCANNER_STATUS_CONNECTED,
     SCANNER_STATUS_CPU_TEMP_CH,
     SCANNER_STATUS_CPU_TEMP_LASER,
@@ -797,6 +800,11 @@ class VoyisAPI:
                 "type": VALUE_TYPE_UINT,
             },
             {
+                "parameter_id": SCANNER_PARAM_LASER_DISABLE_RANGE_GATING,
+                "value": bool2str(cfg.laser_disable_range_gating),
+                "type": VALUE_TYPE_BOOL,
+            },
+            {
                 "parameter_id": SCANNER_PARAM_LASER_MAX_RANGE,
                 "value": str(cfg.laser_max_range_cm),
                 "type": VALUE_TYPE_UINT,
@@ -815,6 +823,16 @@ class VoyisAPI:
                 "parameter_id": SCANNER_PARAM_LASER_OUTPUT_GAIN,
                 "value": str(cfg.laser_gain_percentage),
                 "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": SCANNER_PARAM_STILLS_IMAGE_LEVEL,
+                "value": str(cfg.stills_image_level),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
+                "parameter_id": SCANNER_PARAM_STILLS_IMAGE_UNDISTORT,
+                "value": bool2str(cfg.stills_undistort, "true", "false"),
+                "type": VALUE_TYPE_BOOL,
             },
         ]
 
@@ -839,6 +857,11 @@ class VoyisAPI:
                 "type": VALUE_TYPE_UINT,
             },
             {
+                "parameter_id": API_PARAM_STILLS_IMAGE_LEVEL,
+                "value": str(cfg.stills_image_level),
+                "type": VALUE_TYPE_UINT,
+            },
+            {
                 "parameter_id": API_PARAM_STILLS_IMAGE_SAVE_ORIGINAL,
                 "value": bool2str(cfg.stills_save_original, "true", "false"),
                 "type": VALUE_TYPE_BOOL,
@@ -846,11 +869,6 @@ class VoyisAPI:
             {
                 "parameter_id": API_PARAM_STILLS_PROCESSED_IMAGE_FORMAT,
                 "value": str(cfg.stills_processed_image_format_uint),
-                "type": VALUE_TYPE_UINT,
-            },
-            {
-                "parameter_id": API_PARAM_STILLS_IMAGE_LEVEL,
-                "value": str(cfg.stills_image_level),
                 "type": VALUE_TYPE_UINT,
             },
             {
