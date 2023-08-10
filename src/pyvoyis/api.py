@@ -337,6 +337,7 @@ class VoyisAPI:
                 self.log.error("Could not get scanner status")
                 return
             if self._request_stop:
+                self._request_stop = False
                 self.state.request_stop()
         elif self.state.is_requesting_stop:
             success = self.stop_scanning()
@@ -594,8 +595,13 @@ class VoyisAPI:
         bool
             True if the scanner was stopped, False otherwise
         """
-        success = self.stop_scanning()
-        self.wait_for_scanning_status(False)
+        for i in range(5):
+            success = self.stop_scanning()
+            if success: 
+                break
+            time.sleep(1)
+        #if not success:
+        #    self.wait_for_scanning_status(False)
         """
         while not success:
             if SCANNER_STATUS_SCAN_IN_PROGRESS in self.scanner_status_not_dict:
